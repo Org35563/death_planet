@@ -125,3 +125,4 @@ layer = 2
 material = SubResource("ShaderMaterial_lubsg")
 offset_right = 1154.0
 offset_bottom = 656.0
+color = Color(0.984462, 0.744709, 0.19319, 1)
