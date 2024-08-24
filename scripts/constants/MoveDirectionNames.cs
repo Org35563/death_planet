@@ -1,4 +1,4 @@
-public static class MoveDirection
+public static class MoveDirectionNames
 {
 	public const string RIGHT = "right";
 

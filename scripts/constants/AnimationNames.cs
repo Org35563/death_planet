@@ -1,4 +1,4 @@
-public static class Animation
+public static class AnimationNames
 {
 	public const string FRONT_IDLE = "front_idle";
 

@@ -2,11 +2,7 @@ using Godot;
 
 public partial class Hero : CharacterBody2D
 {
-	private const string HeroAnimationNodeName = "hero_animation";
-
-	public const float Speed = 60.0f;
-
-	public string CurrentDirection = MoveDirection.DOWN;
+	private string _currentDirection;
 
 	private AnimatedSprite2D _animation;
 
@@ -14,56 +10,67 @@ public partial class Hero : CharacterBody2D
 
 	private bool _enemyAttackCooldown = true;
 
-	private int _health = 100;
-
-	private bool _heroAlive = true;
-
 	private bool _attackIp = false;
+
+	#region Hero Parameters
+
+	private float _speed;
+
+	private int _health;
+
+	private bool _isAlive;
+
+	#endregion
 
     public override void _Ready()
     {
-		_animation = GetNode(HeroAnimationNodeName) as AnimatedSprite2D;
-        _animation.Play(Animation.FRONT_IDLE);	
+		SetHeroParams();
+
+		_isAlive = true;
+		_currentDirection = MoveDirectionNames.DOWN;
+		
+		_animation = GetNode<AnimatedSprite2D>(HeroNodeNames.HeroAnimation);
+        _animation.Play(AnimationNames.FRONT_IDLE);		
     }
 
     public override void _PhysicsProcess(double delta)
 	{
 		if(_health <= 0)
 		{
-			_heroAlive = false;
+			_isAlive = false;
 			_health = 0;
 			_animation.Play("death_idle");
 		}
 		else
 		{
-			HeroMovement(delta);
+			HeroMove(delta);
 			EnemyAttack();
 			Attack();
 		}
 	}
 
-	public void HeroMovement(double delta)
+	public void HeroMove(double delta)
 	{
 		Vector2 velocity = default;
 		if(Input.IsActionPressed("ui_right"))
 		{
-			velocity = GetHeroMovement(MoveDirection.RIGHT, true, Speed, 0);
+			velocity = GetHeroMovement(MoveDirectionNames.RIGHT, true, _speed, 0);
 		}
 		else if (Input.IsActionPressed("ui_left"))
 		{
-			velocity = GetHeroMovement(MoveDirection.LEFT, true, -Speed, 0);
+			velocity = GetHeroMovement(MoveDirectionNames.LEFT, true, -_speed, 0);
 		}
 		else if (Input.IsActionPressed("ui_down"))
 		{
-			velocity = GetHeroMovement(MoveDirection.DOWN, true, 0, Speed);
+			velocity = GetHeroMovement(MoveDirectionNames.DOWN, true, 0, _speed);
 		}
 		else if (Input.IsActionPressed("ui_up"))
 		{
-			velocity = GetHeroMovement(MoveDirection.UP, true, 0, -Speed);
+			velocity = GetHeroMovement(MoveDirectionNames.UP, true, 0, -_speed);
 		}
 		else 
 		{
-			velocity = GetHeroMovement(MoveDirection.NONE, false, 0, 0);
+			velocity = GetHeroMovement(MoveDirectionNames.NONE, false, 0, 0);
 		}
 
 		Velocity = velocity;
@@ -101,7 +108,7 @@ public partial class Hero : CharacterBody2D
 
 	private void EnemyAttack()
 	{
-		if(_enemyInAttackRange && _enemyAttackCooldown && _heroAlive)
+		if(_enemyInAttackRange && _enemyAttackCooldown && _isAlive)
 		{
 			_health -= Global.EnemyAttackValue;
 			_enemyAttackCooldown = false;
@@ -114,9 +121,9 @@ public partial class Hero : CharacterBody2D
 	private Vector2 GetHeroMovement(string direction, bool isWalking, float xSpeed, float ySpeed)
 	{
 		Vector2 newVelocity = Velocity;
-		if(direction != MoveDirection.NONE)
+		if(direction != MoveDirectionNames.NONE)
 		{
-			CurrentDirection = direction;
+			_currentDirection = direction;
 		}
 
 		if(_attackIp == false)
@@ -133,29 +140,29 @@ public partial class Hero : CharacterBody2D
 	private void PlayAnimation(bool isWalking)
 	{
 		var anim = string.Empty;
-		var direction = CurrentDirection;
-		if(direction == MoveDirection.RIGHT)
+		var direction = _currentDirection;
+		if(direction == MoveDirectionNames.RIGHT)
 		{
 			_animation.FlipH = false;
-			anim = isWalking ? Animation.SIDE_WALK : Animation.SIDE_IDLE;	
+			anim = isWalking ? AnimationNames.SIDE_WALK : AnimationNames.SIDE_IDLE;	
 		}
 		
-		if(direction == MoveDirection.LEFT)
+		if(direction == MoveDirectionNames.LEFT)
 		{
 			_animation.FlipH = true;
-			anim = isWalking ? Animation.SIDE_WALK : Animation.SIDE_IDLE;
+			anim = isWalking ? AnimationNames.SIDE_WALK : AnimationNames.SIDE_IDLE;
 		}
 		
-		if(direction == MoveDirection.DOWN)
+		if(direction == MoveDirectionNames.DOWN)
 		{
 			_animation.FlipH = true;
-			anim = isWalking ? Animation.FRONT_WALK : Animation.FRONT_IDLE;
+			anim = isWalking ? AnimationNames.FRONT_WALK : AnimationNames.FRONT_IDLE;
 		}
 		
-		if(direction == MoveDirection.UP)
+		if(direction == MoveDirectionNames.UP)
 		{
 			_animation.FlipH = true;
-			anim = isWalking ? Animation.BACK_WALK : Animation.BACK_IDLE;
+			anim = isWalking ? AnimationNames.BACK_WALK : AnimationNames.BACK_IDLE;
 		}
 
 		_animation.Play(anim);
@@ -167,32 +174,47 @@ public partial class Hero : CharacterBody2D
 		{
 			Global.HeroCurrentAttack = true;
 			_attackIp = true;	
-			if(CurrentDirection == MoveDirection.RIGHT)
+			if(_currentDirection == MoveDirectionNames.RIGHT)
 			{
 				_animation.FlipH = false;
 				_animation.Play("side_attack");
 				var timer = GetNode<Timer>("deal_attack_timer");		
 				timer.Start();
 			}
-			else if(CurrentDirection == MoveDirection.LEFT)
+			else if(_currentDirection == MoveDirectionNames.LEFT)
 			{
 				_animation.FlipH = true;
 				_animation.Play("side_attack");
 				var timer = GetNode<Timer>("deal_attack_timer");
 				timer.Start();
 			}
-			else if(CurrentDirection == MoveDirection.DOWN)
+			else if(_currentDirection == MoveDirectionNames.DOWN)
 			{
 				_animation.Play("front_attack");
 				var timer = GetNode<Timer>("deal_attack_timer");
 				timer.Start();
 			}
-			else if(CurrentDirection == MoveDirection.UP)
+			else if(_currentDirection == MoveDirectionNames.UP)
 			{
 				_animation.Play("back_attack");
 				var timer = GetNode<Timer>("deal_attack_timer");
 				timer.Start();
 			}		
+		}
+	}
+
+	private void SetHeroParams()
+	{
+		var newSpeed = (float) GetMeta(HeroMetadataNames.Speed);
+		if(_speed != newSpeed)
+		{
+			_speed = newSpeed;
+		}
+
+		var newHealth = (int) GetMeta(HeroMetadataNames.Health);
+		if(_health != newHealth)
+		{
+			_health = newHealth;
 		}
 	}
 }

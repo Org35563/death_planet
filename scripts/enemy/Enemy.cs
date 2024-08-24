@@ -16,7 +16,7 @@ public partial class Enemy : CharacterBody2D
 
     private const string EnemyAnimationNodeName = "enemy_animation";
 
-    private string _currentDirection = MoveDirection.DOWN;
+    private string _currentDirection = MoveDirectionNames.DOWN;
 
     private bool _heroInAttackZone = false;
 
@@ -24,16 +24,16 @@ public partial class Enemy : CharacterBody2D
 
     private Dictionary<string, string> _idlesDict = new ()
     {
-        { MoveDirection.RIGHT, Animation.SIDE_IDLE },
-        { MoveDirection.LEFT, Animation.SIDE_IDLE },
-        { MoveDirection.DOWN, Animation.FRONT_IDLE },
-        { MoveDirection.UP, Animation.BACK_IDLE },  
+        { MoveDirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
+        { MoveDirectionNames.LEFT, AnimationNames.SIDE_IDLE },
+        { MoveDirectionNames.DOWN, AnimationNames.FRONT_IDLE },
+        { MoveDirectionNames.UP, AnimationNames.BACK_IDLE },  
     };
 
     public override void _Ready()
     {
 		_enemyAnimation = GetNode(EnemyAnimationNodeName) as AnimatedSprite2D;
-        _enemyAnimation.Play(Animation.FRONT_IDLE);
+        _enemyAnimation.Play(AnimationNames.FRONT_IDLE);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -52,24 +52,24 @@ public partial class Enemy : CharacterBody2D
             if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
             {
                 // Движение влево или вправо
-                _enemyAnimation.Play(Animation.SIDE_WALK);
+                _enemyAnimation.Play(AnimationNames.SIDE_WALK);
                 _enemyAnimation.FlipH = direction.X < 0;
 
-                _currentDirection = _enemyAnimation.FlipH ? MoveDirection.RIGHT : MoveDirection.LEFT;
+                _currentDirection = _enemyAnimation.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
             }
             else
             {
                 if (direction.Y < 0)
                 {
                     // Движение вверх
-                    _enemyAnimation.Play(Animation.BACK_WALK);
-                    _currentDirection = MoveDirection.UP;
+                    _enemyAnimation.Play(AnimationNames.BACK_WALK);
+                    _currentDirection = MoveDirectionNames.UP;
                 }
                 else
                 {
                     // Движение вниз
-                    _enemyAnimation.Play(Animation.FRONT_WALK);
-                    _currentDirection = MoveDirection.DOWN;
+                    _enemyAnimation.Play(AnimationNames.FRONT_WALK);
+                    _currentDirection = MoveDirectionNames.DOWN;
                 }
             }
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=43 format=3 uid="uid://4ajsqoi0aos5"]
 
+[ext_resource type="Script" path="res://scripts/enemy/Enemy.cs" id="1_kg176"]
 [ext_resource type="Texture2D" uid="uid://dnp6v4ymg7afd" path="res://art/characters/slime.png" id="1_mpxr7"]
-[ext_resource type="Script" path="res://scripts/Enemy.cs" id="1_o6m0n"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_oe4v6"]
 atlas = ExtResource("1_mpxr7")
@@ -302,7 +302,7 @@ radius = 13.0384
 y_sort_enabled = true
 collision_layer = 3
 collision_mask = 3
-script = ExtResource("1_o6m0n")
+script = ExtResource("1_kg176")
 
 [node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
