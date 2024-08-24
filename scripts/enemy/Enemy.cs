@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public partial class Enemy : CharacterBody2D
+public partial class Enemy : CharacterBody2D, IEnemy
 {
     public const float Speed = 45.0f;
 
@@ -22,6 +22,8 @@ public partial class Enemy : CharacterBody2D
 
     private int _health = 100;
 
+    private bool _isUnderAttack;
+
     private Dictionary<string, string> _idlesDict = new ()
     {
         { MoveDirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
@@ -34,6 +36,8 @@ public partial class Enemy : CharacterBody2D
     {
 		_enemyAnimation = GetNode(EnemyAnimationNodeName) as AnimatedSprite2D;
         _enemyAnimation.Play(AnimationNames.FRONT_IDLE);
+
+        _isUnderAttack = false;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -42,7 +46,7 @@ public partial class Enemy : CharacterBody2D
 
         if(_health <= 0)
         {
-            return;
+            return;              
         }
 
         if(_heroChase && !_stopMovement)
@@ -133,20 +137,27 @@ public partial class Enemy : CharacterBody2D
         }
     }
 
-    public void Attack()
-    {
-        GD.Print("Attacking!");
-    }
-
     public void OnDeathTimerTimeout()
     {
-        var deathTimer = GetNode<Timer>("death_timer") as Timer;
+        var deathTimer = GetNode<Timer>("death_timer");
         deathTimer.Stop();
         this.QueueFree();
     }
 
     private void DealWithAttack()
     {
+        if(_isUnderAttack)
+        {   
+            if(_health <= 0)
+            {
+                var deathTimer = GetNode<Timer>("death_timer");
+                _enemyAnimation.Play("death"); 
+                deathTimer.Start();
+                _isUnderAttack = false;
+            }
+        }
+
+        /*
         if(_heroInAttackZone && Global.HeroCurrentAttack && _health > 0)
         {
             _health -= Global.HeroAttackValue;
@@ -155,12 +166,26 @@ public partial class Enemy : CharacterBody2D
             {
                 var deathTimer = GetNode<Timer>("death_timer") as Timer;
                 _enemyAnimation.Play("death"); 
-                deathTimer.Start();                 
+                deathTimer.Start();
             }
 
             Global.HeroCurrentAttack = false;
         }
+        */
     }
+
+    public void SetHealth(int newHealthValue)
+    {
+        _health = newHealthValue;
+    }
+
+    public int GetHealth() => _health;
+
+    public void SetAttack(bool isUnderAttack)
+    {
+        _isUnderAttack = isUnderAttack;
+    }
+
 }
 
 

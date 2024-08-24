@@ -436,6 +436,7 @@ radius = 14.0
 collision_layer = 3
 script = ExtResource("1_2a2sb")
 metadata/Speed = 77.0
+metadata/AttackPower = 20
 
 [node name="hero_animation" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
@@ -449,16 +450,16 @@ y_sort_enabled = true
 position = Vector2(0, -3)
 shape = SubResource("CapsuleShape2D_v7wy3")
 
-[node name="hero_hitbox" type="Area2D" parent="."]
+[node name="hero_attack_area" type="Area2D" parent="."]
 
-[node name="hitbox_collision_shape" type="CollisionShape2D" parent="hero_hitbox"]
+[node name="attack_area_collision_shape" type="CollisionShape2D" parent="hero_attack_area"]
 position = Vector2(0, -8)
 shape = SubResource("CircleShape2D_q3jgt")
 
-[node name="attack_cooldown" type="Timer" parent="."]
+[node name="hero_attack_cooldown_timer" type="Timer" parent="."]
 wait_time = 0.5
 
-[node name="deal_attack_timer" type="Timer" parent="."]
+[node name="hero_attack_timer" type="Timer" parent="."]
 wait_time = 0.5
 
 [node name="hero_camera" type="Camera2D" parent="."]
@@ -472,7 +473,7 @@ rotation_smoothing_enabled = true
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
-[connection signal="body_entered" from="hero_hitbox" to="." method="OnHeroHitboxBodyEntered"]
-[connection signal="body_exited" from="hero_hitbox" to="." method="OnHeroHitboxBodyExited"]
-[connection signal="timeout" from="attack_cooldown" to="." method="OnAttackCooldownTimeout"]
-[connection signal="timeout" from="deal_attack_timer" to="." method="OnDealAttackTimerTimeout"]
+[connection signal="body_entered" from="hero_attack_area" to="." method="OnHeroAttackAreaBodyEntered"]
+[connection signal="body_exited" from="hero_attack_area" to="." method="OnHeroAttackAreaBodyExited"]
+[connection signal="timeout" from="hero_attack_cooldown_timer" to="." method="OnHeroAttackCooldownTimerTimeout"]
+[connection signal="timeout" from="hero_attack_timer" to="." method="OnHeroAttackTimerTimeout"]
