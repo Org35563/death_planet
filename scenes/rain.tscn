@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://wk2ebnig7kkr"]
+
+[ext_resource type="Texture2D" uid="uid://dlwfthlb8yomt" path="res://art/textures/rain/rain_texture.png" id="1_n022k"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3p7ky"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(700, 1, 1)
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+angle_min = -30.0
+angle_max = -20.0
+direction = Vector3(-0.5, 1, 0)
+spread = 0.0
+initial_velocity_min = 100.0
+initial_velocity_max = 150.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.1
+scale_max = 0.5
+
+[node name="rain" type="GPUParticles2D"]
+light_mask = 3
+visibility_layer = 3
+position = Vector2(100, -1)
+amount = 1000
+process_material = SubResource("ParticleProcessMaterial_3p7ky")
+texture = ExtResource("1_n022k")
+lifetime = 3.0
+preprocess = 3.0
+speed_scale = 2.0
+randomness = 0.5
+fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 500, 100)
+local_coords = true

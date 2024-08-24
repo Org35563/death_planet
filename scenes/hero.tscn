@@ -1,6 +1,6 @@
 [gd_scene load_steps=58 format=3 uid="uid://d1gv65y66vrqw"]
 
-[ext_resource type="Script" path="res://scripts/Player.cs" id="1_etut2"]
+[ext_resource type="Script" path="res://scripts/Hero.cs" id="1_etut2"]
 [ext_resource type="Texture2D" uid="uid://cmx08tjgletpt" path="res://art/characters/player.png" id="1_oy41m"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_t7wxl"]
@@ -432,25 +432,25 @@ height = 12.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_q3jgt"]
 radius = 14.0
 
-[node name="player" type="CharacterBody2D"]
+[node name="hero" type="CharacterBody2D"]
 collision_layer = 3
 script = ExtResource("1_etut2")
 
-[node name="PlayerAnimation2D" type="AnimatedSprite2D" parent="."]
+[node name="hero_animation" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
 position = Vector2(0, -18)
 sprite_frames = SubResource("SpriteFrames_wp8w6")
 animation = &"front_idle"
 frame_progress = 0.953907
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="hero_collision_shape" type="CollisionShape2D" parent="."]
 y_sort_enabled = true
 position = Vector2(0, -3)
 shape = SubResource("CapsuleShape2D_v7wy3")
 
-[node name="player_hitbox" type="Area2D" parent="."]
+[node name="hero_hitbox" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="player_hitbox"]
+[node name="hitbox_collision_shape" type="CollisionShape2D" parent="hero_hitbox"]
 position = Vector2(0, -8)
 shape = SubResource("CircleShape2D_q3jgt")
 
@@ -460,7 +460,7 @@ wait_time = 0.5
 [node name="deal_attack_timer" type="Timer" parent="."]
 wait_time = 0.5
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="hero_camera" type="Camera2D" parent="."]
 zoom = Vector2(3, 3)
 limit_left = 0
 limit_top = 0
@@ -471,7 +471,7 @@ rotation_smoothing_enabled = true
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
-[connection signal="body_entered" from="player_hitbox" to="." method="OnPlayerHitboxBodyEntered"]
-[connection signal="body_exited" from="player_hitbox" to="." method="OnPlayerHitboxBodyExited"]
+[connection signal="body_entered" from="hero_hitbox" to="." method="OnHeroHitboxBodyEntered"]
+[connection signal="body_exited" from="hero_hitbox" to="." method="OnHeroHitboxBodyExited"]
 [connection signal="timeout" from="attack_cooldown" to="." method="OnAttackCooldownTimeout"]
 [connection signal="timeout" from="deal_attack_timer" to="." method="OnDealAttackTimerTimeout"]

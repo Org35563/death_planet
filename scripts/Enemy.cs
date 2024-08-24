@@ -6,19 +6,19 @@ public partial class Enemy : CharacterBody2D
 {
     public const float Speed = 45.0f;
 
-    private bool _playerChase = false;
+    private bool _heroChase = false;
 
-    private Node2D _player = null;
+    private Node2D _hero = null;
 
     private AnimatedSprite2D _enemyAnimation;
 
     private bool _stopMovement = false;
 
-    private const string EnemyAnimationNodeName = "EnemyAnimation2D";
+    private const string EnemyAnimationNodeName = "enemy_animation";
 
     private string _currentDirection = MoveDirection.DOWN;
 
-    private bool _playerInAttackZone = false;
+    private bool _heroInAttackZone = false;
 
     private int _health = 100;
 
@@ -45,9 +45,9 @@ public partial class Enemy : CharacterBody2D
             return;
         }
 
-        if(_playerChase && !_stopMovement)
+        if(_heroChase && !_stopMovement)
         {
-            Vector2 direction = (_player.Position - Position).Normalized();
+            Vector2 direction = (_hero.Position - Position).Normalized();
             Position += direction * Speed * (float)delta;
             if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
             {
@@ -83,35 +83,35 @@ public partial class Enemy : CharacterBody2D
 
     public void OnDetectionAreaBodyEntered(Node2D body)
     {
-        MakeOnPlayerAction(body, () =>
+        MakeOnHeroAction(body, () =>
         {
-            _player = body;
-            _playerChase = true;
+            _hero = body;
+            _heroChase = true;
         });
     }
 
     public void OnDetectionAreaBodyExited(Node2D body)
     {
-        MakeOnPlayerAction(body, () =>
+        MakeOnHeroAction(body, () =>
         {
-            _player = null;
-            _playerChase = false;
+            _hero = null;
+            _heroChase = false;
         });
     }
 
     public void  OnStopAreaBodyEntered(Node2D body)
     {
-        MakeOnPlayerAction(body, () => {_stopMovement = true;});      
+        MakeOnHeroAction(body, () => {_stopMovement = true;});      
     }
 
     public void OnStopAreaBodyExited(Node2D body)
     {
-        MakeOnPlayerAction(body, () => {_stopMovement = false;});
+        MakeOnHeroAction(body, () => {_stopMovement = false;});
     }
 
-    public void MakeOnPlayerAction(Node2D body, Action action)
+    public void MakeOnHeroAction(Node2D body, Action action)
     {
-        if(string.Equals(body.Name, nameof(Player), StringComparison.OrdinalIgnoreCase))
+        if(string.Equals(body.Name, nameof(Hero), StringComparison.OrdinalIgnoreCase))
         {
             action();
         }
@@ -119,17 +119,17 @@ public partial class Enemy : CharacterBody2D
 
     public void OnEnemyHitboxBodyEntered(Node2D body)
     {
-        if(body.Name == "player")
+        if(body.Name == "hero")
         {
-            _playerInAttackZone = true;
+            _heroInAttackZone = true;
         }
     }
 
     public void OnEnemyHitboxBodyExited(Node2D body)
     {
-        if(body.Name == "player")
+        if(body.Name == "hero")
         {
-            _playerInAttackZone = false;
+            _heroInAttackZone = false;
         }
     }
 
@@ -147,9 +147,9 @@ public partial class Enemy : CharacterBody2D
 
     private void DealWithAttack()
     {
-        if(_playerInAttackZone && Global.PlayerCurrentAttack && _health > 0)
+        if(_heroInAttackZone && Global.HeroCurrentAttack && _health > 0)
         {
-            _health -= Global.PlayerAttackValue;
+            _health -= Global.HeroAttackValue;
             GD.Print($"Slime health: " + _health);
             if(_health <= 0)
             {
@@ -158,7 +158,7 @@ public partial class Enemy : CharacterBody2D
                 deathTimer.Start();                 
             }
 
-            Global.PlayerCurrentAttack = false;
+            Global.HeroCurrentAttack = false;
         }
     }
 }

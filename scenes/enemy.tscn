@@ -304,7 +304,7 @@ collision_layer = 3
 collision_mask = 3
 script = ExtResource("1_o6m0n")
 
-[node name="EnemyAnimation2D" type="AnimatedSprite2D" parent="."]
+[node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
 sprite_frames = SubResource("SpriteFrames_04oe6")
 animation = &"front_idle"
@@ -315,25 +315,25 @@ offset = Vector2(0, 4)
 collision_layer = 2
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="detection_area"]
+[node name="detection_area_collision_shape" type="CollisionShape2D" parent="detection_area"]
 y_sort_enabled = true
 shape = SubResource("CircleShape2D_2ck5g")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="enemy_collision_shape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_aqrtr")
 
-[node name="stop_area" type="Area2D" parent="."]
+[node name="enemy_stop_area" type="Area2D" parent="."]
 collision_layer = 2
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="stop_area"]
+[node name="enemy_stop_area_collision_shape" type="CollisionShape2D" parent="enemy_stop_area"]
 position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_47cbu")
 
 [node name="enemy_hitbox" type="Area2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="enemy_hitbox"]
+[node name="enemy_hitbox_collision_shape" type="CollisionShape2D" parent="enemy_hitbox"]
 position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_q0d0u")
 
@@ -342,8 +342,8 @@ wait_time = 0.5
 
 [connection signal="body_entered" from="detection_area" to="." method="OnDetectionAreaBodyEntered"]
 [connection signal="body_exited" from="detection_area" to="." method="OnDetectionAreaBodyExited"]
-[connection signal="body_entered" from="stop_area" to="." method="OnStopAreaBodyEntered"]
-[connection signal="body_exited" from="stop_area" to="." method="OnStopAreaBodyExited"]
+[connection signal="body_entered" from="enemy_stop_area" to="." method="OnStopAreaBodyEntered"]
+[connection signal="body_exited" from="enemy_stop_area" to="." method="OnStopAreaBodyExited"]
 [connection signal="body_entered" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyEntered"]
 [connection signal="body_exited" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyExited"]
 [connection signal="timeout" from="death_timer" to="." method="OnDeathTimerTimeout"]
