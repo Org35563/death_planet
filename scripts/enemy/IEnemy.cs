@@ -1,8 +1,3 @@
-public interface IEnemy
+public interface IEnemy : ICombatUnit
 {
-    public int GetHealth();
-
-    public void SetHealth(int newHealthValue);
-
-    public void SetAttack(bool isUnderAttack);
 }

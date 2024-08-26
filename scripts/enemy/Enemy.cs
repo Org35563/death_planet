@@ -1,28 +1,50 @@
-using System;
 using System.Collections.Generic;
 using Godot;
 
 public partial class Enemy : CharacterBody2D, IEnemy
 {
-    public const float Speed = 45.0f;
+    
+    private IHero _closestHero;
 
-    private bool _heroChase = false;
+    private AnimatedSprite2D _animationPlayer;
 
-    private Node2D _hero = null;
+    private Timer _enemyDeathTimer;
 
-    private AnimatedSprite2D _enemyAnimation;
+    private Timer _enemyAttackCooldownTimer;
+
+    #region Свойства передвижения врага
+
+    private string _currentDirection;
 
     private bool _stopMovement = false;
 
-    private const string EnemyAnimationNodeName = "enemy_animation";
+    #endregion
 
-    private string _currentDirection = MoveDirectionNames.DOWN;
+    #region Свойства атаки врага
+
+    private bool _heroChase = false;
 
     private bool _heroInAttackZone = false;
 
-    private int _health = 100;
+    private bool _isEnemyUnderAttack = false;
 
-    private bool _isUnderAttack;
+    private bool _enemyAttackCooldownFinished = true;
+
+    private bool _isEnemyAttacking = false;
+
+    #endregion
+
+    #region Характеристики врага
+
+    private float _speed;
+
+    private int _health;
+
+    private bool _isAlive;
+
+    private int _attackPower;
+
+    #endregion
 
     private Dictionary<string, string> _idlesDict = new ()
     {
@@ -34,96 +56,83 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public override void _Ready()
     {
-		_enemyAnimation = GetNode(EnemyAnimationNodeName) as AnimatedSprite2D;
-        _enemyAnimation.Play(AnimationNames.FRONT_IDLE);
+		_health = (int) GetMeta(HeroMetadataNames.Health);
+		_attackPower = (int) GetMeta(HeroMetadataNames.AttackPower);
+        _speed = (float) GetMeta(HeroMetadataNames.Speed);
 
-        _isUnderAttack = false;
+        _isAlive = true;
+        _isEnemyUnderAttack = false;
+        _currentDirection = MoveDirectionNames.DOWN;
+
+        _enemyDeathTimer = GetNode<Timer>(EnemyNodeNames.DeathTimer);
+        _enemyAttackCooldownTimer = GetNode<Timer>(EnemyNodeNames.AttackCooldownTimer);
+
+		_animationPlayer = GetNode(EnemyNodeNames.Animation) as AnimatedSprite2D;
+        _animationPlayer.Play(AnimationNames.FRONT_IDLE);
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        DealWithAttack();
+        CheckIsEnemyAlive();
 
-        if(_health <= 0)
+        if(_isAlive)
         {
-            return;              
-        }
-
-        if(_heroChase && !_stopMovement)
-        {
-            Vector2 direction = (_hero.Position - Position).Normalized();
-            Position += direction * Speed * (float)delta;
-            if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
-            {
-                // Движение влево или вправо
-                _enemyAnimation.Play(AnimationNames.SIDE_WALK);
-                _enemyAnimation.FlipH = direction.X < 0;
-
-                _currentDirection = _enemyAnimation.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
-            }
-            else
-            {
-                if (direction.Y < 0)
-                {
-                    // Движение вверх
-                    _enemyAnimation.Play(AnimationNames.BACK_WALK);
-                    _currentDirection = MoveDirectionNames.UP;
-                }
-                else
-                {
-                    // Движение вниз
-                    _enemyAnimation.Play(AnimationNames.FRONT_WALK);
-                    _currentDirection = MoveDirectionNames.DOWN;
-                }
-            }
-
-            MoveAndSlide();
-        }
-        else
-        {
-            _enemyAnimation.Play(_idlesDict[_currentDirection]);
+            Move((float)delta);
+            Attack();
         }
     }
 
-    public void OnDetectionAreaBodyEntered(Node2D body)
+    public int GetHealth() => _health;
+
+    public void SetHealth(int newHealthValue)
     {
-        MakeOnHeroAction(body, () =>
+        _health = newHealthValue;
+    }
+
+    public void SetIsUnderAttack(bool isUnderAttack)
+    {
+        _isEnemyUnderAttack = isUnderAttack;
+    }
+
+    #region Обработчики событий
+
+    public void OnHeroDetectionAreaBodyEntered(Node2D body)
+    {
+        if(Global.IsGameUnitType<IHero>(body))
         {
-            _hero = body;
+            _closestHero = (IHero)body;
             _heroChase = true;
-        });
+        }
     }
 
-    public void OnDetectionAreaBodyExited(Node2D body)
+    public void OnHeroDetectionAreaBodyExited(Node2D body)
     {
-        MakeOnHeroAction(body, () =>
+        if(Global.IsGameUnitType<IHero>(body))
         {
-            _hero = null;
+            _closestHero = null;
             _heroChase = false;
-        });
+        }
     }
 
     public void  OnStopAreaBodyEntered(Node2D body)
     {
-        MakeOnHeroAction(body, () => {_stopMovement = true;});      
+        if(Global.IsGameUnitType<IHero>(body))
+        {
+            _stopMovement = true;
+        }    
     }
 
     public void OnStopAreaBodyExited(Node2D body)
     {
-        MakeOnHeroAction(body, () => {_stopMovement = false;});
-    }
-
-    public void MakeOnHeroAction(Node2D body, Action action)
-    {
-        if(string.Equals(body.Name, nameof(Hero), StringComparison.OrdinalIgnoreCase))
+        if(Global.IsGameUnitType<IHero>(body))
         {
-            action();
-        }
+            _stopMovement = false;
+        } 
     }
 
     public void OnEnemyHitboxBodyEntered(Node2D body)
     {
-        if(body.Name == "hero")
+        if(Global.IsGameUnitType<IHero>(body))
         {
             _heroInAttackZone = true;
         }
@@ -131,61 +140,90 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public void OnEnemyHitboxBodyExited(Node2D body)
     {
-        if(body.Name == "hero")
+        if(Global.IsGameUnitType<IHero>(body))
         {
             _heroInAttackZone = false;
         }
     }
 
-    public void OnDeathTimerTimeout()
+    public void OnEnemyDeathTimerTimeout()
     {
-        var deathTimer = GetNode<Timer>("death_timer");
-        deathTimer.Stop();
+        _enemyDeathTimer.Stop();
         this.QueueFree();
     }
 
-    private void DealWithAttack()
+    public void OnEnemyAttackCooldownTimerTimeout()
     {
-        if(_isUnderAttack)
+        _enemyAttackCooldownTimer.Stop();
+        _enemyAttackCooldownFinished = true;
+        _closestHero.SetIsUnderAttack(false);
+    }
+
+    #endregion
+
+    private void Move(float delta)
+    {
+        if(_heroChase && !_stopMovement)
+        {
+            Vector2 direction = (_closestHero.GetCurrentPosition() - Position).Normalized();
+            Position += direction * _speed * delta;
+            if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
+            {
+                // Движение влево или вправо
+                _animationPlayer.Play(AnimationNames.SIDE_WALK);
+                _animationPlayer.FlipH = direction.X < 0;
+
+                _currentDirection = _animationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
+            }
+            else
+            {
+                if (direction.Y < 0)
+                {
+                    // Движение вверх
+                    _animationPlayer.Play(AnimationNames.BACK_WALK);
+                    _currentDirection = MoveDirectionNames.UP;
+                }
+                else
+                {
+                    // Движение вниз
+                    _animationPlayer.Play(AnimationNames.FRONT_WALK);
+                    _currentDirection = MoveDirectionNames.DOWN;
+                }
+            }
+
+            MoveAndSlide();   
+        }
+        else
+        {
+            _animationPlayer.Play(_idlesDict[_currentDirection]);
+        }
+    }
+
+    private void Attack()
+    {
+        if(_heroInAttackZone && _closestHero != null && _closestHero.IsAlive() && _enemyAttackCooldownFinished)
+        {
+            _closestHero.SetHealth(_closestHero.GetHealth() - _attackPower);
+            _closestHero.SetIsUnderAttack(true);
+            _enemyAttackCooldownFinished = false;
+            _enemyAttackCooldownTimer.Start();
+            GD.Print($"Hero health: {_closestHero.GetHealth()}");
+        }
+    }
+
+    private void CheckIsEnemyAlive()
+    {
+        if(_isEnemyUnderAttack)
         {   
             if(_health <= 0)
             {
-                var deathTimer = GetNode<Timer>("death_timer");
-                _enemyAnimation.Play("death"); 
-                deathTimer.Start();
-                _isUnderAttack = false;
+                _animationPlayer.Play(AnimationNames.DEATH); 
+                _enemyDeathTimer.Start();
+                _isEnemyUnderAttack = false;
+                _isAlive = false;
             }
         }
-
-        /*
-        if(_heroInAttackZone && Global.HeroCurrentAttack && _health > 0)
-        {
-            _health -= Global.HeroAttackValue;
-            GD.Print($"Slime health: " + _health);
-            if(_health <= 0)
-            {
-                var deathTimer = GetNode<Timer>("death_timer") as Timer;
-                _enemyAnimation.Play("death"); 
-                deathTimer.Start();
-            }
-
-            Global.HeroCurrentAttack = false;
-        }
-        */
     }
-
-    public void SetHealth(int newHealthValue)
-    {
-        _health = newHealthValue;
-    }
-
-    public int GetHealth() => _health;
-
-    public void SetAttack(bool isUnderAttack)
-    {
-        _isUnderAttack = isUnderAttack;
-    }
-
 }
 
 

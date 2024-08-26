@@ -113,7 +113,6 @@ y_sort_enabled = true
 position = Vector2(73, 94)
 collision_mask = 3
 metadata/Speed = 70.0
-metadata/Health = 100
 
 [node name="enemy" parent="." instance=ExtResource("5_f2rpn")]
 position = Vector2(191, 70)

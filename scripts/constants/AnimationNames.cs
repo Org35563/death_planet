@@ -19,4 +19,6 @@ public static class AnimationNames
 	public const string SIDE_ATTACK = "side_attack";
 
 	public const string DEATH = "death";
+
+	public const string DEATH_IDLE = "death_idle";
 }

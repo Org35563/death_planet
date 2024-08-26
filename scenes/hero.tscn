@@ -437,13 +437,13 @@ collision_layer = 3
 script = ExtResource("1_2a2sb")
 metadata/Speed = 77.0
 metadata/AttackPower = 20
+metadata/Health = 100
 
 [node name="hero_animation" type="AnimatedSprite2D" parent="."]
 y_sort_enabled = true
 position = Vector2(0, -18)
 sprite_frames = SubResource("SpriteFrames_wp8w6")
-animation = &"front_idle"
-frame_progress = 0.953907
+animation = &"death_idle"
 
 [node name="hero_collision_shape" type="CollisionShape2D" parent="."]
 y_sort_enabled = true
@@ -473,7 +473,10 @@ rotation_smoothing_enabled = true
 drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
+[node name="hero_death_timer" type="Timer" parent="."]
+
 [connection signal="body_entered" from="hero_attack_area" to="." method="OnHeroAttackAreaBodyEntered"]
 [connection signal="body_exited" from="hero_attack_area" to="." method="OnHeroAttackAreaBodyExited"]
 [connection signal="timeout" from="hero_attack_cooldown_timer" to="." method="OnHeroAttackCooldownTimerTimeout"]
 [connection signal="timeout" from="hero_attack_timer" to="." method="OnHeroAttackTimerTimeout"]
+[connection signal="timeout" from="hero_death_timer" to="." method="OnHeroDeathTimerTimeout"]

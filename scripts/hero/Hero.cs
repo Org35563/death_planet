@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class Hero : CharacterBody2D
+public partial class Hero : CharacterBody2D, IHero
 {
 	private IEnemy _closestEnemy;
 
@@ -10,20 +10,31 @@ public partial class Hero : CharacterBody2D
 
 	private Timer _heroAttackCooldownTimer;
 
+	private Timer _heroDeathTimer;
+
+	private HeroMovementDto _movementDto;
+
+	#region Свойства атаки героя
+
 	private bool _enemyInAttackRange = false;
 
 	private bool _heroAttackCooldownFinished = true;
 
 	private bool _isHeroAttacking = false;
 
-	private HeroMovementDto _movementDto;
+	private bool _isHeroUnderAttack = false;
 
+	#endregion
+
+	#region Характеристики героя
+	
 	private int _health;
 
 	private bool _isAlive;
 
 	private int _attackPower;
 
+	#endregion
 
     public override void _Ready()
     {
@@ -38,7 +49,8 @@ public partial class Hero : CharacterBody2D
 		};
 		
 		_heroAttackTimer = GetNode<Timer>(HeroNodeNames.AttackTimer);
-		_heroAttackCooldownTimer = GetNode<Timer>(HeroNodeNames.AttackCooldownTimer); 
+		_heroAttackCooldownTimer = GetNode<Timer>(HeroNodeNames.AttackCooldownTimer);
+		_heroDeathTimer = GetNode<Timer>(HeroNodeNames.DeathTimer);
 
 		_animationPlayer = GetNode<AnimatedSprite2D>(HeroNodeNames.Animation);
         _animationPlayer.Play(AnimationNames.FRONT_IDLE);		
@@ -46,21 +58,72 @@ public partial class Hero : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
 	{
-		if(_health <= 0)
-		{
-			// TODO: сделать отдельный метод на проверку жив ли герой
-			_isAlive = false;
-			_health = 0;
-			_animationPlayer.Play("death_idle");
-		}
-		else
+		CheckIsHeroAlive();
+
+		if(_isAlive)
 		{
 			Move();
 			Attack();
 		}
 	}
 
-	public void Move()
+	public int GetHealth() => _health;
+
+    public void SetHealth(int newHealthValue)
+    {
+        _health = newHealthValue;
+    }
+
+    public void SetIsUnderAttack(bool isUnderAttack)
+    {
+        _isHeroUnderAttack = isUnderAttack;
+    }
+
+	public Vector2 GetCurrentPosition() => Position;
+
+	public bool IsAlive() => _isAlive;
+
+	#region Обработчики событий
+
+	public void OnHeroAttackAreaBodyEntered(Node2D body)
+	{
+		if(Global.IsGameUnitType<IEnemy>(body))
+		{
+			_enemyInAttackRange = true;
+			_closestEnemy = (IEnemy)body;
+		}
+	}
+
+	public void OnHeroAttackAreaBodyExited(Node2D body)
+	{
+		if(Global.IsGameUnitType<IEnemy>(body))
+		{
+			_enemyInAttackRange = false;
+			_closestEnemy = null;
+		}	
+	}
+
+	public void OnHeroAttackTimerTimeout()
+	{
+		_heroAttackTimer.Stop();
+		_isHeroAttacking = false;
+	}
+
+	public void OnHeroAttackCooldownTimerTimeout()
+	{
+		_heroAttackCooldownTimer.Stop();
+		_heroAttackCooldownFinished = true;
+	}
+
+	public void OnHeroDeathTimerTimeout()
+	{
+        _heroDeathTimer.Stop();
+		_animationPlayer.Play(AnimationNames.DEATH_IDLE);
+	}
+
+    #endregion
+
+	private void Move()
 	{
 		var newMovement = HeroMovement.Move(_movementDto);
 		if(_isHeroAttacking == false)
@@ -83,7 +146,7 @@ public partial class Hero : CharacterBody2D
 			if(_enemyInAttackRange && _closestEnemy != null && _heroAttackCooldownFinished)
 			{
 				_closestEnemy.SetHealth(_closestEnemy.GetHealth() - _attackPower);
-				_closestEnemy.SetAttack(true);
+				_closestEnemy.SetIsUnderAttack(true);
 				_heroAttackCooldownFinished = false;
 				_heroAttackCooldownTimer.Start();
 				GD.Print($"Enemy health: {_closestEnemy.GetHealth()}");
@@ -91,37 +154,17 @@ public partial class Hero : CharacterBody2D
 		}
 	}
 
-	#region Обработчики событий
-
-	public void OnHeroAttackAreaBodyEntered(Node2D body)
+	private void CheckIsHeroAlive()
 	{
-		if(Global.IsEnemy(body))
-		{
-			_enemyInAttackRange = true;
-			_closestEnemy = (IEnemy)body;
-		}
+		if(_isHeroUnderAttack)
+        {   
+            if(_health <= 0)
+            {
+                _animationPlayer.Play(AnimationNames.DEATH); 
+                _heroDeathTimer.Start();
+                _isHeroUnderAttack = false;
+				_isAlive = false;
+            }
+        }
 	}
-
-	public void OnHeroAttackAreaBodyExited(Node2D body)
-	{
-		if(Global.IsEnemy(body))
-		{
-			_enemyInAttackRange = false;
-			_closestEnemy = null;
-		}	
-	}
-
-	public void OnHeroAttackTimerTimeout()
-	{
-		_heroAttackTimer.Stop();
-		Global.HeroCurrentAttack = false;
-		_isHeroAttacking = false;
-	}
-
-	public void OnHeroAttackCooldownTimerTimeout()
-	{
-		_heroAttackCooldownFinished = true;
-	}
-
-	#endregion
 }

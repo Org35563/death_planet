@@ -303,21 +303,21 @@ y_sort_enabled = true
 collision_layer = 3
 collision_mask = 3
 script = ExtResource("1_kg176")
-metadata/AttackPower = 10
-metadata/Speed = 60.0
+metadata/AttackPower = 20
+metadata/Speed = 50.0
+metadata/Health = 100
 
 [node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
 sprite_frames = SubResource("SpriteFrames_04oe6")
-animation = &"front_idle"
-frame_progress = 0.0375215
+animation = &"death"
 offset = Vector2(0, 4)
 
-[node name="detection_area" type="Area2D" parent="."]
+[node name="hero_detection_area" type="Area2D" parent="."]
 collision_layer = 2
 collision_mask = 2
 
-[node name="detection_area_collision_shape" type="CollisionShape2D" parent="detection_area"]
+[node name="hero_detection_area_collision_shape" type="CollisionShape2D" parent="hero_detection_area"]
 y_sort_enabled = true
 shape = SubResource("CircleShape2D_2ck5g")
 
@@ -339,13 +339,17 @@ shape = SubResource("CircleShape2D_47cbu")
 position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_q0d0u")
 
-[node name="death_timer" type="Timer" parent="."]
+[node name="enemy_death_timer" type="Timer" parent="."]
 wait_time = 0.5
 
-[connection signal="body_entered" from="detection_area" to="." method="OnDetectionAreaBodyEntered"]
-[connection signal="body_exited" from="detection_area" to="." method="OnDetectionAreaBodyExited"]
+[node name="enemy_attack_cooldown_timer" type="Timer" parent="."]
+wait_time = 0.5
+
+[connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
+[connection signal="body_exited" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyExited"]
 [connection signal="body_entered" from="enemy_stop_area" to="." method="OnStopAreaBodyEntered"]
 [connection signal="body_exited" from="enemy_stop_area" to="." method="OnStopAreaBodyExited"]
 [connection signal="body_entered" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyEntered"]
 [connection signal="body_exited" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyExited"]
-[connection signal="timeout" from="death_timer" to="." method="OnDeathTimerTimeout"]
+[connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
+[connection signal="timeout" from="enemy_attack_cooldown_timer" to="." method="OnEnemyAttackCooldownTimerTimeout"]
