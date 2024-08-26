@@ -34,30 +34,27 @@ public static class HeroAnimation
 
 	public static void PlayAttack(string direction, AnimatedSprite2D animation, Timer attackTimer)
 	{
-		if(Input.IsActionJustPressed(ButtonNames.Attack))
-		{	
-			if(direction == MoveDirectionNames.RIGHT)
-			{
-				animation.FlipH = false;
-				animation.Play(AnimationNames.SIDE_ATTACK);	
-				attackTimer.Start();
-			}
-			else if(direction == MoveDirectionNames.LEFT)
-			{
-				animation.FlipH = true;
-				animation.Play(AnimationNames.SIDE_ATTACK);
-				attackTimer.Start();
-			}
-			else if(direction == MoveDirectionNames.DOWN)
-			{
-				animation.Play(AnimationNames.FRONT_ATTACK);
-				attackTimer.Start();
-			}
-			else if(direction == MoveDirectionNames.UP)
-			{
-				animation.Play(AnimationNames.BACK_ATTACK);
-				attackTimer.Start();
-			}		
+		if(direction == MoveDirectionNames.RIGHT)
+		{
+			animation.FlipH = false;
+			animation.Play(AnimationNames.SIDE_ATTACK);	
+			attackTimer.Start();
+		}
+		else if(direction == MoveDirectionNames.LEFT)
+		{
+			animation.FlipH = true;
+			animation.Play(AnimationNames.SIDE_ATTACK);
+			attackTimer.Start();
+		}
+		else if(direction == MoveDirectionNames.DOWN)
+		{
+			animation.Play(AnimationNames.FRONT_ATTACK);
+			attackTimer.Start();
+		}
+		else if(direction == MoveDirectionNames.UP)
+		{
+			animation.Play(AnimationNames.BACK_ATTACK);
+			attackTimer.Start();
 		}
 	}
 }

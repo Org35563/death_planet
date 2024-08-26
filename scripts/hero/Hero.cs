@@ -69,15 +69,9 @@ public partial class Hero : CharacterBody2D, IHero
 
 	public int GetHealth() => _health;
 
-    public void SetHealth(int newHealthValue)
-    {
-        _health = newHealthValue;
-    }
+    public void SetHealth(int newHealthValue) => _health = newHealthValue;
 
-    public void SetIsUnderAttack(bool isUnderAttack)
-    {
-        _isHeroUnderAttack = isUnderAttack;
-    }
+    public void SetIsUnderAttack(bool isUnderAttack) => _isHeroUnderAttack = isUnderAttack;
 
 	public Vector2 GetCurrentPosition() => Position;
 

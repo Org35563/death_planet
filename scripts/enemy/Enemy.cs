@@ -84,15 +84,9 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public int GetHealth() => _health;
 
-    public void SetHealth(int newHealthValue)
-    {
-        _health = newHealthValue;
-    }
+    public void SetHealth(int newHealthValue) => _health = newHealthValue;
 
-    public void SetIsUnderAttack(bool isUnderAttack)
-    {
-        _isEnemyUnderAttack = isUnderAttack;
-    }
+    public void SetIsUnderAttack(bool isUnderAttack) => _isEnemyUnderAttack = isUnderAttack;
 
     #region Обработчики событий
 

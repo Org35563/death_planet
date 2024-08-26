@@ -443,7 +443,7 @@ metadata/Health = 100
 y_sort_enabled = true
 position = Vector2(0, -18)
 sprite_frames = SubResource("SpriteFrames_wp8w6")
-animation = &"death_idle"
+animation = &"front_idle"
 
 [node name="hero_collision_shape" type="CollisionShape2D" parent="."]
 y_sort_enabled = true
