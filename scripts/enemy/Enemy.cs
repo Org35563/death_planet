@@ -88,6 +88,8 @@ public partial class Enemy : CharacterBody2D, IEnemy
             Attack();
             Move((float)delta);
         }
+
+        MoveAndSlide();
     }
 
     public int GetHealth() => _health;
@@ -198,11 +200,11 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
                 _animationPlayer.Play(animationName);
 
-                MoveAndSlide();   
+                // MoveAndSlide();   
             }
             else
             {
-                _animationPlayer.Play(_idlesDict[_currentDirection]);
+                // _animationPlayer.Play(_idlesDict[_currentDirection]);
             }
         }
     }

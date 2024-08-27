@@ -1,7 +1,10 @@
-[gd_scene load_steps=52 format=3 uid="uid://4ajsqoi0aos5"]
+[gd_scene load_steps=55 format=3 uid="uid://4ajsqoi0aos5"]
 
 [ext_resource type="Script" path="res://scripts/enemy/Enemy.cs" id="1_kg176"]
 [ext_resource type="Texture2D" uid="uid://dnp6v4ymg7afd" path="res://art/characters/slime.png" id="1_mpxr7"]
+[ext_resource type="Script" path="res://scripts/states/StateMachine.cs" id="3_wj5pt"]
+[ext_resource type="Script" path="res://scripts/states/IdleState.cs" id="4_3lpgb"]
+[ext_resource type="Script" path="res://scripts/states/MoveState.cs" id="4_rfwcw"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s5ijh"]
 atlas = ExtResource("1_mpxr7")
@@ -384,6 +387,7 @@ script = ExtResource("1_kg176")
 metadata/AttackPower = 5
 metadata/Speed = 50.0
 metadata/Health = 100
+metadata/MoveDirection = ""
 
 [node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
@@ -424,6 +428,25 @@ wait_time = 3.0
 [node name="enemy_attack_cooldown_timer" type="Timer" parent="."]
 wait_time = 0.7
 
+[node name="state_machine" type="Node" parent="."]
+script = ExtResource("3_wj5pt")
+InitialState = NodePath("idle")
+
+[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
+script = ExtResource("4_3lpgb")
+_animationPlayer = NodePath("../../enemy_animation")
+_enemy = NodePath("../..")
+
+[node name="fsm_idle_timer" type="Timer" parent="state_machine/idle"]
+wait_time = 2.0
+
+[node name="move" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
+script = ExtResource("4_rfwcw")
+_animationPlayer = NodePath("../../enemy_animation")
+_enemy = NodePath("../..")
+
+[node name="fsm_move_timer" type="Timer" parent="state_machine/move"]
+
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="body_exited" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyExited"]
 [connection signal="body_entered" from="enemy_stop_area" to="." method="OnStopAreaBodyEntered"]
@@ -432,3 +455,5 @@ wait_time = 0.7
 [connection signal="body_exited" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyExited"]
 [connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
 [connection signal="timeout" from="enemy_attack_cooldown_timer" to="." method="OnEnemyAttackCooldownTimerTimeout"]
+[connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]
+[connection signal="timeout" from="state_machine/move/fsm_move_timer" to="state_machine/move" method="OnFsmMoveTimerTimeout"]

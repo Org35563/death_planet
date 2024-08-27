@@ -115,7 +115,7 @@ collision_mask = 3
 metadata/Speed = 70.0
 
 [node name="enemy" parent="." instance=ExtResource("5_f2rpn")]
-position = Vector2(191, 70)
+position = Vector2(206, 139)
 
 [node name="fog" type="ParallaxBackground" parent="."]
 layer = 2
