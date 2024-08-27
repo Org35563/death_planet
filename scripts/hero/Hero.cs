@@ -62,8 +62,8 @@ public partial class Hero : CharacterBody2D, IHero
 
 		if(_isAlive)
 		{
-			Move();
 			Attack();
+			Move();
 		}
 	}
 

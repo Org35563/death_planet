@@ -54,6 +54,14 @@ public partial class Enemy : CharacterBody2D, IEnemy
         { MoveDirectionNames.UP, AnimationNames.BACK_IDLE },  
     };
 
+    private Dictionary<string, string> _attackDict = new ()
+    {
+        { MoveDirectionNames.RIGHT, AnimationNames.SIDE_ATTACK },
+        { MoveDirectionNames.LEFT, AnimationNames.SIDE_ATTACK },
+        { MoveDirectionNames.DOWN, AnimationNames.FRONT_ATTACK },
+        { MoveDirectionNames.UP, AnimationNames.BACK_ATTACK },  
+    };
+
     public override void _Ready()
     {
 		_health = (int) GetMeta(HeroMetadataNames.Health);
@@ -77,8 +85,8 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
         if(_isAlive)
         {
-            Move((float)delta);
             Attack();
+            Move((float)delta);
         }
     }
 
@@ -149,6 +157,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
     public void OnEnemyAttackCooldownTimerTimeout()
     {
         _enemyAttackCooldownTimer.Stop();
+        _isEnemyAttacking = false;
         _enemyAttackCooldownFinished = true;
         _closestHero.SetIsUnderAttack(false);
     }
@@ -157,48 +166,56 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     private void Move(float delta)
     {
-        if(_heroChase && !_stopMovement)
+        if(_isEnemyAttacking == false)
         {
-            Vector2 direction = (_closestHero.GetCurrentPosition() - Position).Normalized();
-            Position += direction * _speed * delta;
-            if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
+            if(_heroChase && !_stopMovement)
             {
-                // Движение влево или вправо
-                _animationPlayer.Play(AnimationNames.SIDE_WALK);
-                _animationPlayer.FlipH = direction.X < 0;
-
-                _currentDirection = _animationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
-            }
-            else
-            {
-                if (direction.Y < 0)
+                Vector2 direction = (_closestHero.GetCurrentPosition() - Position).Normalized();
+                Position += direction * _speed * delta;
+                var animationName = string.Empty;
+                if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
                 {
-                    // Движение вверх
-                    _animationPlayer.Play(AnimationNames.BACK_WALK);
-                    _currentDirection = MoveDirectionNames.UP;
+                    // Движение влево или вправо
+                    animationName = AnimationNames.SIDE_WALK;
+                    _animationPlayer.FlipH = direction.X < 0;
+                    _currentDirection = _animationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
                 }
                 else
                 {
-                    // Движение вниз
-                    _animationPlayer.Play(AnimationNames.FRONT_WALK);
-                    _currentDirection = MoveDirectionNames.DOWN;
+                    if (direction.Y < 0)
+                    {
+                        // Движение вверх
+                        animationName = AnimationNames.BACK_WALK;
+                        _currentDirection = MoveDirectionNames.UP;
+                    }
+                    else
+                    {
+                        // Движение вниз
+                        animationName = AnimationNames.FRONT_WALK;
+                        _currentDirection = MoveDirectionNames.DOWN;
+                    }
                 }
-            }
 
-            MoveAndSlide();   
-        }
-        else
-        {
-            _animationPlayer.Play(_idlesDict[_currentDirection]);
+                _animationPlayer.Play(animationName);
+
+                MoveAndSlide();   
+            }
+            else
+            {
+                _animationPlayer.Play(_idlesDict[_currentDirection]);
+            }
         }
     }
 
     private void Attack()
     {
-        if(_heroInAttackZone && _closestHero != null && _closestHero.IsAlive() && _enemyAttackCooldownFinished)
+        if(_heroInAttackZone && _enemyAttackCooldownFinished && _closestHero != null && _closestHero.IsAlive())
         {
+            _animationPlayer.Play(_attackDict[_currentDirection]);
+
             _closestHero.SetHealth(_closestHero.GetHealth() - _attackPower);
             _closestHero.SetIsUnderAttack(true);
+            _isEnemyAttacking = true;
             _enemyAttackCooldownFinished = false;
             _enemyAttackCooldownTimer.Start();
             GD.Print($"Hero health: {_closestHero.GetHealth()}");
