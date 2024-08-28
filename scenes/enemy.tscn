@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" path="res://scripts/enemy/Enemy.cs" id="1_kg176"]
 [ext_resource type="Texture2D" uid="uid://dnp6v4ymg7afd" path="res://art/characters/slime.png" id="1_mpxr7"]
-[ext_resource type="Script" path="res://scripts/states/StateMachine.cs" id="3_wj5pt"]
-[ext_resource type="Script" path="res://scripts/states/IdleState.cs" id="4_3lpgb"]
-[ext_resource type="Script" path="res://scripts/states/MoveState.cs" id="4_rfwcw"]
+[ext_resource type="Script" path="res://scripts/fsm/StateMachine.cs" id="3_4x44j"]
+[ext_resource type="Script" path="res://scripts/fsm/states/IdleState.cs" id="4_bfrf5"]
+[ext_resource type="Script" path="res://scripts/fsm/states/WanderState.cs" id="5_5t2oc"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s5ijh"]
 atlas = ExtResource("1_mpxr7")
@@ -387,7 +387,6 @@ script = ExtResource("1_kg176")
 metadata/AttackPower = 5
 metadata/Speed = 50.0
 metadata/Health = 100
-metadata/MoveDirection = ""
 
 [node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
@@ -429,23 +428,26 @@ wait_time = 3.0
 wait_time = 0.7
 
 [node name="state_machine" type="Node" parent="."]
-script = ExtResource("3_wj5pt")
+script = ExtResource("3_4x44j")
 InitialState = NodePath("idle")
 
-[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
-script = ExtResource("4_3lpgb")
-_animationPlayer = NodePath("../../enemy_animation")
-_enemy = NodePath("../..")
+[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Enemy")]
+script = ExtResource("4_bfrf5")
+AnimationPlayer = NodePath("../../enemy_animation")
+Enemy = NodePath("../..")
+MinTimerValue = 1
+MaxTimerValue = 3
 
 [node name="fsm_idle_timer" type="Timer" parent="state_machine/idle"]
 wait_time = 2.0
 
-[node name="move" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
-script = ExtResource("4_rfwcw")
+[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
+script = ExtResource("5_5t2oc")
 _animationPlayer = NodePath("../../enemy_animation")
 _enemy = NodePath("../..")
+MoveSpeed = 30.0
 
-[node name="fsm_move_timer" type="Timer" parent="state_machine/move"]
+[node name="fsm_wander_timer" type="Timer" parent="state_machine/wander"]
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="body_exited" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyExited"]
@@ -456,4 +458,4 @@ _enemy = NodePath("../..")
 [connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
 [connection signal="timeout" from="enemy_attack_cooldown_timer" to="." method="OnEnemyAttackCooldownTimerTimeout"]
 [connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]
-[connection signal="timeout" from="state_machine/move/fsm_move_timer" to="state_machine/move" method="OnFsmMoveTimerTimeout"]
+[connection signal="timeout" from="state_machine/wander/fsm_wander_timer" to="state_machine/wander" method="OnFsmWanderTimerTimeout"]

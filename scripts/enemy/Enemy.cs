@@ -3,7 +3,6 @@ using Godot;
 
 public partial class Enemy : CharacterBody2D, IEnemy
 {
-    
     private IHero _closestHero;
 
     private AnimatedSprite2D _animationPlayer;
@@ -81,6 +80,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public override void _PhysicsProcess(double delta)
     {
+        /*
         CheckIsEnemyAlive();
 
         if(_isAlive)
@@ -90,6 +90,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
         }
 
         MoveAndSlide();
+        */
     }
 
     public int GetHealth() => _health;

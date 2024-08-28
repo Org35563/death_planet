@@ -19,7 +19,7 @@ public partial class StateMachine : Node
             {
                 _states.Add(node.Name, s);
                 s.StateMachine = this;
-                s.Exit(); // сброс состояния
+                s.Exit();
             }
         }
 
@@ -27,19 +27,9 @@ public partial class StateMachine : Node
         _currentState.Enter();
     }
 
-    public override void _Process(double delta)
-    {
-        _currentState.Update((float) delta);
-    }
-
     public override void _PhysicsProcess(double delta)
     {
         _currentState.PhysicsUpdate((float) delta);
-    }
-
-    public override void _UnhandledInput(InputEvent @event)
-    {
-        _currentState.HandleInput(@event);
     }
 
     public void TransitionTo(string key)

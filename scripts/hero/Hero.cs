@@ -53,7 +53,7 @@ public partial class Hero : CharacterBody2D, IHero
 		_heroDeathTimer = GetNode<Timer>(HeroNodeNames.DeathTimer);
 
 		_animationPlayer = GetNode<AnimatedSprite2D>(HeroNodeNames.Animation);
-        _animationPlayer.Play(AnimationNames.FRONT_IDLE);		
+        _animationPlayer.Play(AnimationNames.FRONT_IDLE);
     }
 
     public override void _PhysicsProcess(double delta)
