@@ -5,4 +5,6 @@ public static class StateNodeNames
     public const string WanderTimer = "fsm_wander_timer";
 
     public const string IdleTimer = "fsm_idle_timer";
+
+    public const string AttackTimer = "fsm_attack_cooldown_timer";
 }

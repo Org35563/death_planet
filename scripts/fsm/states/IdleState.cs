@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public partial class IdleState : State
+public partial class IdleState : State, IMovableState
 {
     [Export]
     public AnimatedSprite2D AnimationPlayer;
 
     [Export]
     public CharacterBody2D Enemy;
+
+    [Export]
+    public Area2D _chaseArea;
 
     [Export]
     public int MinTimerValue;
@@ -25,6 +28,8 @@ public partial class IdleState : State
 
     private Vector2 _idleVelocity;
 
+    private string _currentDirection;
+
     private Dictionary<string, string> _idlesDict = new ()
     {
         { MoveDirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
@@ -39,24 +44,19 @@ public partial class IdleState : State
         _random = new Random();
         _currentIdle = AnimationNames.FRONT_IDLE;
         _idleVelocity = Vector2.Zero;
+        _currentDirection = MoveDirectionNames.DOWN;
+        _chaseArea.BodyEntered += OnBodyEntered;
+        _chaseArea.BodyExited += OnBodyExited;
     }
 
-    public override void PhysicsUpdate(float delta) => Enemy.Velocity = _idleVelocity;
+    public override void PhysicsUpdate(float delta)
+    {
+        Enemy.Velocity = _idleVelocity;
+    }
 
     public override void Enter()
     {   
-        var moveStateNode = Enemy
-            .GetNode<Node>(StateNodeNames.StateMachine)
-            .GetChildren()
-            .FirstOrDefault(x => x.Name == StateNames.Wander);
-        
-        var currentDirection = MoveDirectionNames.DOWN;
-        if(moveStateNode != null && moveStateNode is IMovableState movableState)
-        {
-            currentDirection = movableState.GetCurrentDirection() ?? currentDirection;
-        }
-
-        _currentIdle = _idlesDict[currentDirection];
+        _currentIdle = _idlesDict[_currentDirection];
         if(AnimationPlayer != null)
         {
             AnimationPlayer.Play(_currentIdle);
@@ -75,4 +75,46 @@ public partial class IdleState : State
     {
         StateMachine.TransitionTo(StateNames.Wander);
     }
+
+    public void OnBodyEntered(Node2D body)
+    {
+        if(Global.IsGameUnitType<IHero>(body))
+        {
+            Exit();
+            var chaseNode = GetNodeByName(StateNames.Chase);
+            if(chaseNode != null && chaseNode is IInteractableState interactableState)
+            {
+                interactableState.SetInteractable((CharacterBody2D)body);
+            }
+
+            if(chaseNode != null && chaseNode is IMovableState movableState)
+            {
+                movableState.SetCurrentDirection(_currentDirection);
+            }
+
+            StateMachine.TransitionTo(StateNames.Chase);
+        }
+    }
+
+    public void OnBodyExited(Node2D body)
+    {
+        Exit();
+        var chaseNode = GetNodeByName(StateNames.Chase);
+        if(chaseNode != null && chaseNode is IMovableState movableState)
+        {
+            _currentDirection = movableState.GetCurrentDirection();
+        }
+
+        StateMachine.TransitionTo(StateNames.Idle);
+    }
+
+
+    private Node GetNodeByName(string nodeName) =>
+        Enemy.GetNode<Node>(StateNodeNames.StateMachine)
+             .GetChildren()
+             .FirstOrDefault(x => x.Name == nodeName);
+
+    public string GetCurrentDirection() => _currentDirection;
+
+    public void SetCurrentDirection(string direction) => _currentDirection = direction;
 }

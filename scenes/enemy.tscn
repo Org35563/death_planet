@@ -1,10 +1,11 @@
-[gd_scene load_steps=55 format=3 uid="uid://4ajsqoi0aos5"]
+[gd_scene load_steps=56 format=3 uid="uid://4ajsqoi0aos5"]
 
 [ext_resource type="Script" path="res://scripts/enemy/Enemy.cs" id="1_kg176"]
 [ext_resource type="Texture2D" uid="uid://dnp6v4ymg7afd" path="res://art/characters/slime.png" id="1_mpxr7"]
 [ext_resource type="Script" path="res://scripts/fsm/StateMachine.cs" id="3_4x44j"]
 [ext_resource type="Script" path="res://scripts/fsm/states/IdleState.cs" id="4_bfrf5"]
 [ext_resource type="Script" path="res://scripts/fsm/states/WanderState.cs" id="5_5t2oc"]
+[ext_resource type="Script" path="res://scripts/fsm/states/ChaseState.cs" id="6_6i1pb"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s5ijh"]
 atlas = ExtResource("1_mpxr7")
@@ -431,26 +432,34 @@ wait_time = 0.7
 script = ExtResource("3_4x44j")
 InitialState = NodePath("idle")
 
-[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Enemy")]
+[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Enemy", "_chaseArea")]
 script = ExtResource("4_bfrf5")
 AnimationPlayer = NodePath("../../enemy_animation")
 Enemy = NodePath("../..")
+_chaseArea = NodePath("../../hero_detection_area")
 MinTimerValue = 1
 MaxTimerValue = 3
 
 [node name="fsm_idle_timer" type="Timer" parent="state_machine/idle"]
 wait_time = 2.0
 
-[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
+[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Enemy", "ChaseArea")]
 script = ExtResource("5_5t2oc")
-_animationPlayer = NodePath("../../enemy_animation")
-_enemy = NodePath("../..")
-MoveSpeed = 30.0
+AnimationPlayer = NodePath("../../enemy_animation")
+Enemy = NodePath("../..")
+ChaseArea = NodePath("../../hero_detection_area")
+MoveSpeed = 35.0
 
 [node name="fsm_wander_timer" type="Timer" parent="state_machine/wander"]
 
+[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
+script = ExtResource("6_6i1pb")
+_animationPlayer = NodePath("../../enemy_animation")
+_enemy = NodePath("../..")
+MoveSpeed = 50.0
+
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
-[connection signal="body_exited" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyExited"]
+[connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]
 [connection signal="body_entered" from="enemy_stop_area" to="." method="OnStopAreaBodyEntered"]
 [connection signal="body_exited" from="enemy_stop_area" to="." method="OnStopAreaBodyExited"]
 [connection signal="body_entered" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyEntered"]

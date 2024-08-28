@@ -112,16 +112,14 @@ tile_set = SubResource("TileSet_ea08n")
 y_sort_enabled = true
 position = Vector2(73, 94)
 disable_mode = 1
-collision_layer = 1
-collision_mask = 1
+collision_layer = 3
+collision_mask = 3
 motion_mode = 1
 metadata/Speed = 70.0
 
 [node name="enemy" parent="." instance=ExtResource("5_f2rpn")]
 position = Vector2(206, 139)
 disable_mode = 1
-collision_layer = 1
-collision_mask = 1
 motion_mode = 1
 
 [node name="fog" type="ParallaxBackground" parent="."]

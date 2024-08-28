@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
+// TODO: скрипт будет удалён после переноса функционала в состояния
 public partial class Enemy : CharacterBody2D, IEnemy
 {
     private IHero _closestHero;

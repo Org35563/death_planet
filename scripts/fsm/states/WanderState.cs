@@ -1,13 +1,17 @@
 using System;
+using System.Linq;
 using Godot;
 
 public partial class WanderState : State, IMovableState
 {
     [Export]
-    public AnimatedSprite2D _animationPlayer;
+    public AnimatedSprite2D AnimationPlayer;
 
     [Export]
-    public CharacterBody2D _enemy;
+    public CharacterBody2D Enemy;
+
+    [Export]
+    public Area2D ChaseArea;
 
     [Export]
     public float MoveSpeed;
@@ -24,13 +28,14 @@ public partial class WanderState : State, IMovableState
     {
         _fsmMoveTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
+        ChaseArea.BodyEntered += OnChaseCollision;
     }
 
     public override void PhysicsUpdate(float delta)
     {
-        _enemy.Velocity = _moveDirection * MoveSpeed;
+        Enemy.Velocity = _moveDirection * MoveSpeed;
 
-        _enemy.MoveAndSlide();
+        Enemy.MoveAndSlide();
     }
 
     public override void Enter()
@@ -48,9 +53,9 @@ public partial class WanderState : State, IMovableState
         if (Mathf.Abs(_moveDirection.X) > Mathf.Abs(_moveDirection.Y))
         {
             animationName = AnimationNames.SIDE_WALK;
-            _animationPlayer.FlipH = _moveDirection.X < 0;
+            AnimationPlayer.FlipH = _moveDirection.X < 0;
 
-            _currentDirection = _animationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
+            _currentDirection = AnimationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
         }
         else
         {
@@ -66,9 +71,9 @@ public partial class WanderState : State, IMovableState
             }
         }     
 
-        if(_animationPlayer != null)
+        if(AnimationPlayer != null)
         {
-            _animationPlayer.Play(animationName);;
+            AnimationPlayer.Play(animationName);
         }
 
         if(_fsmMoveTimer != null)
@@ -82,10 +87,29 @@ public partial class WanderState : State, IMovableState
 
     public void OnFsmWanderTimerTimeout()
     {
+        var idleNode = GetNodeByName(StateNames.Idle);
+        if(idleNode != null && idleNode is IMovableState movableState)
+        {
+            movableState.SetCurrentDirection(_currentDirection);
+        }
+
         StateMachine.TransitionTo(StateNames.Idle);
     }
 
     public string GetCurrentDirection() => _currentDirection;
 
     public void SetCurrentDirection(string direction) => _currentDirection = direction;
+
+    public void OnChaseCollision(Node2D body)
+    {
+        if(Global.IsGameUnitType<IHero>(body))
+        {
+            StateMachine.TransitionTo(StateNames.Chase);
+        }
+    }
+
+    private Node GetNodeByName(string nodeName) =>
+        Enemy.GetNode<Node>(StateNodeNames.StateMachine)
+            .GetChildren()
+            .FirstOrDefault((x) => x.Name == nodeName);
 }
