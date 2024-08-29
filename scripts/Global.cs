@@ -11,4 +11,9 @@ public static class Global
 
       return bodyInterfaces.Contains(typeof(T));
     }
+
+    public static Node GetNodeByName(Node source, string parentNodeName, string searchNodeName) =>
+      source.GetNode<Node>(parentNodeName)
+            .GetChildren()
+            .FirstOrDefault(x => x.Name == searchNodeName);
 }

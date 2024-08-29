@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
 
 public partial class IdleState : State, IMovableState
@@ -9,10 +8,10 @@ public partial class IdleState : State, IMovableState
     public AnimatedSprite2D AnimationPlayer;
 
     [Export]
-    public CharacterBody2D Enemy;
+    public CharacterBody2D Character;
 
     [Export]
-    public Area2D _chaseArea;
+    public Area2D ChaseArea;
 
     [Export]
     public int MinTimerValue;
@@ -25,8 +24,6 @@ public partial class IdleState : State, IMovableState
     private Random _random;
 
     private string _currentIdle;
-
-    private Vector2 _idleVelocity;
 
     private string _currentDirection;
 
@@ -43,16 +40,12 @@ public partial class IdleState : State, IMovableState
         _fsmIdleTimer = GetNode<Timer>(StateNodeNames.IdleTimer);
         _random = new Random();
         _currentIdle = AnimationNames.FRONT_IDLE;
-        _idleVelocity = Vector2.Zero;
         _currentDirection = MoveDirectionNames.DOWN;
-        _chaseArea.BodyEntered += OnBodyEntered;
-        _chaseArea.BodyExited += OnBodyExited;
+        ChaseArea.BodyEntered += OnBodyEntered;
+        ChaseArea.BodyExited += OnBodyExited;
     }
 
-    public override void PhysicsUpdate(float delta)
-    {
-        Enemy.Velocity = _idleVelocity;
-    }
+    public override void PhysicsUpdate(float delta) => Character.Velocity = Vector2.Zero;
 
     public override void Enter()
     {   
@@ -71,17 +64,14 @@ public partial class IdleState : State, IMovableState
 
     public override void Exit() => _fsmIdleTimer.Stop();
 
-    public void OnFsmIdleTimerTimeout()
-    {
-        StateMachine.TransitionTo(StateNames.Wander);
-    }
+    public void OnFsmIdleTimerTimeout() => StateMachine.TransitionTo(StateNames.Wander);
 
     public void OnBodyEntered(Node2D body)
     {
         if(Global.IsGameUnitType<IHero>(body))
         {
             Exit();
-            var chaseNode = GetNodeByName(StateNames.Chase);
+            var chaseNode = GetChaseNode();
             if(chaseNode != null && chaseNode is IInteractableState interactableState)
             {
                 interactableState.SetInteractable((CharacterBody2D)body);
@@ -99,7 +89,7 @@ public partial class IdleState : State, IMovableState
     public void OnBodyExited(Node2D body)
     {
         Exit();
-        var chaseNode = GetNodeByName(StateNames.Chase);
+        var chaseNode = GetChaseNode();
         if(chaseNode != null && chaseNode is IMovableState movableState)
         {
             _currentDirection = movableState.GetCurrentDirection();
@@ -108,13 +98,9 @@ public partial class IdleState : State, IMovableState
         StateMachine.TransitionTo(StateNames.Idle);
     }
 
-
-    private Node GetNodeByName(string nodeName) =>
-        Enemy.GetNode<Node>(StateNodeNames.StateMachine)
-             .GetChildren()
-             .FirstOrDefault(x => x.Name == nodeName);
-
     public string GetCurrentDirection() => _currentDirection;
 
     public void SetCurrentDirection(string direction) => _currentDirection = direction;
+
+    private Node GetChaseNode() => Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
 }

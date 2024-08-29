@@ -4,10 +4,10 @@ using Godot;
 public partial class ChaseState : State, IInteractableState, IMovableState
 {
     [Export]
-    public AnimatedSprite2D _animationPlayer;
+    public AnimatedSprite2D AnimationPlayer;
 
     [Export]
-    public CharacterBody2D _enemy;
+    public CharacterBody2D Character;
 
     [Export]
     public float MoveSpeed;
@@ -15,6 +15,8 @@ public partial class ChaseState : State, IInteractableState, IMovableState
     private CharacterBody2D _chasingObject;
 
     private string _currentDirection;
+
+    private bool _isCharacterStopped;
 
     private Dictionary<string, string> _chasesDict = new ()
     {
@@ -26,14 +28,14 @@ public partial class ChaseState : State, IInteractableState, IMovableState
 
     public override void PhysicsUpdate(float delta)
     {
-        var direction = (_chasingObject.Position - _enemy.Position).Normalized();
-        _enemy.Position += direction * MoveSpeed * delta;
+        var direction = (_chasingObject.Position - Character.Position).Normalized();
+        Character.Position += direction * MoveSpeed * delta;
 
         if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
         {
-            _animationPlayer.FlipH = direction.X < 0;
+            AnimationPlayer.FlipH = direction.X < 0;
 
-            _currentDirection = _animationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
+            _currentDirection = AnimationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
         }
         else
         {
@@ -47,12 +49,12 @@ public partial class ChaseState : State, IInteractableState, IMovableState
             }
         }     
 
-        if(_animationPlayer != null)
+        if(AnimationPlayer != null)
         {
-            _animationPlayer.Play(_chasesDict[_currentDirection]);
+            AnimationPlayer.Play(_chasesDict[_currentDirection]);
         }  
 
-        _enemy.MoveAndSlide();
+        Character.MoveAndSlide();
     }
 
     public CharacterBody2D GetInteractable() => _chasingObject;

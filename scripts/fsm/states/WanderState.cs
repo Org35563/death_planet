@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Godot;
 
 public partial class WanderState : State, IMovableState
@@ -8,7 +7,7 @@ public partial class WanderState : State, IMovableState
     public AnimatedSprite2D AnimationPlayer;
 
     [Export]
-    public CharacterBody2D Enemy;
+    public CharacterBody2D Character;
 
     [Export]
     public Area2D ChaseArea;
@@ -33,9 +32,8 @@ public partial class WanderState : State, IMovableState
 
     public override void PhysicsUpdate(float delta)
     {
-        Enemy.Velocity = _moveDirection * MoveSpeed;
-
-        Enemy.MoveAndSlide();
+        Character.Velocity = _moveDirection * MoveSpeed;
+        Character.MoveAndSlide();
     }
 
     public override void Enter()
@@ -57,19 +55,16 @@ public partial class WanderState : State, IMovableState
 
             _currentDirection = AnimationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
         }
+        else if (_moveDirection.Y < 0)
+        {
+            animationName = AnimationNames.BACK_WALK;
+            _currentDirection = MoveDirectionNames.UP;
+        }
         else
         {
-            if (_moveDirection.Y < 0)
-            {
-                animationName = AnimationNames.BACK_WALK;
-                _currentDirection = MoveDirectionNames.UP;
-            }
-            else
-            {
-                animationName = AnimationNames.FRONT_WALK;
-                _currentDirection = MoveDirectionNames.DOWN;
-            }
-        }     
+            animationName = AnimationNames.FRONT_WALK;
+            _currentDirection = MoveDirectionNames.DOWN;
+        }
 
         if(AnimationPlayer != null)
         {
@@ -87,7 +82,7 @@ public partial class WanderState : State, IMovableState
 
     public void OnFsmWanderTimerTimeout()
     {
-        var idleNode = GetNodeByName(StateNames.Idle);
+        var idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
         if(idleNode != null && idleNode is IMovableState movableState)
         {
             movableState.SetCurrentDirection(_currentDirection);
@@ -107,9 +102,4 @@ public partial class WanderState : State, IMovableState
             StateMachine.TransitionTo(StateNames.Chase);
         }
     }
-
-    private Node GetNodeByName(string nodeName) =>
-        Enemy.GetNode<Node>(StateNodeNames.StateMachine)
-            .GetChildren()
-            .FirstOrDefault((x) => x.Name == nodeName);
 }

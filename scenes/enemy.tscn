@@ -432,30 +432,30 @@ wait_time = 0.7
 script = ExtResource("3_4x44j")
 InitialState = NodePath("idle")
 
-[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Enemy", "_chaseArea")]
+[node name="idle" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "ChaseArea")]
 script = ExtResource("4_bfrf5")
 AnimationPlayer = NodePath("../../enemy_animation")
-Enemy = NodePath("../..")
-_chaseArea = NodePath("../../hero_detection_area")
+Character = NodePath("../..")
+ChaseArea = NodePath("../../hero_detection_area")
 MinTimerValue = 1
 MaxTimerValue = 3
 
 [node name="fsm_idle_timer" type="Timer" parent="state_machine/idle"]
 wait_time = 2.0
 
-[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Enemy", "ChaseArea")]
+[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "ChaseArea")]
 script = ExtResource("5_5t2oc")
 AnimationPlayer = NodePath("../../enemy_animation")
-Enemy = NodePath("../..")
+Character = NodePath("../..")
 ChaseArea = NodePath("../../hero_detection_area")
 MoveSpeed = 35.0
 
 [node name="fsm_wander_timer" type="Timer" parent="state_machine/wander"]
 
-[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("_animationPlayer", "_enemy")]
+[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
 script = ExtResource("6_6i1pb")
-_animationPlayer = NodePath("../../enemy_animation")
-_enemy = NodePath("../..")
+AnimationPlayer = NodePath("../../enemy_animation")
+Character = NodePath("../..")
 MoveSpeed = 50.0
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]

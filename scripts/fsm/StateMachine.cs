@@ -15,11 +15,11 @@ public partial class StateMachine : Node
         _states = new Dictionary<string, State>();
         foreach(Node node in GetChildren())
         {
-            if(node is State s)
+            if(node is State state)
             {
-                _states.Add(node.Name, s);
-                s.StateMachine = this;
-                s.Exit();
+                _states.Add(node.Name, state);
+                state.StateMachine = this;
+                state.Exit();
             }
         }
 
