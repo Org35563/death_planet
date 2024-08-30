@@ -23,6 +23,8 @@ public partial class IdleState : State, IMovableState
 
     private Random _random;
 
+    private Node _chaseNode;
+
     private string _currentIdle;
 
     private string _currentDirection;
@@ -39,6 +41,7 @@ public partial class IdleState : State, IMovableState
     {
         _fsmIdleTimer = GetNode<Timer>(StateNodeNames.IdleTimer);
         _random = new Random();
+        _chaseNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
         _currentIdle = AnimationNames.FRONT_IDLE;
         _currentDirection = DirectionNames.DOWN;
         ChaseArea.BodyEntered += OnChaseAreaBodyEntered;
@@ -68,15 +71,14 @@ public partial class IdleState : State, IMovableState
 
     public void OnChaseAreaBodyEntered(Node2D body)
     {
-        if(body is ICharacter character && character.IsAlive())
+        if(Global.IsCharacterAlive(body))
         {
-            var chaseNode = GetChaseNode();
-            if(chaseNode != null && chaseNode is IInteractableState<CharacterBody2D> interactableState)
+            if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
             {
                 interactableState.SetInteractableObject((CharacterBody2D)body);
             }
 
-            if(chaseNode != null && chaseNode is IMovableState movableState)
+            if(_chaseNode != null && _chaseNode is IMovableState movableState)
             {
                 movableState.SetCurrentDirection(_currentDirection);
             }
@@ -93,8 +95,7 @@ public partial class IdleState : State, IMovableState
 
     public void OnChaseAreaBodyExited(Node2D body)
     {
-        var chaseNode = GetChaseNode();
-        if(chaseNode != null && chaseNode is IMovableState movableState)
+        if(_chaseNode != null && _chaseNode is IMovableState movableState)
         {
             _currentDirection = movableState.GetCurrentDirection();
         }
@@ -106,6 +107,4 @@ public partial class IdleState : State, IMovableState
     public string GetCurrentDirection() => _currentDirection;
 
     public void SetCurrentDirection(string direction) => _currentDirection = direction;
-
-    private Node GetChaseNode() => Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
 }

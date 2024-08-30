@@ -21,6 +21,8 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     private bool _isCharacterStopped;
 
+    private Node _attackNode;
+
     private Dictionary<string, string> _chasesDict = new ()
     {
         { DirectionNames.RIGHT, AnimationNames.SIDE_WALK },
@@ -33,35 +35,35 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     {
         AttackArea.BodyEntered += OnAttackAreaBodyEntered;
         AttackArea.BodyExited += OnAttackAreaBodyExited;
+        _attackNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Attack);
+    }
+
+    public override void Enter()
+    {
+        if(_chasingObject is ICharacter character && (character == null || !character.IsAlive()))
+        {
+            StateMachine.TransitionTo(StateNames.Wander);
+        }
     }
 
     public override void PhysicsUpdate(float delta)
     {
-        if(_chasingObject is ICharacter character && !character.IsAlive())
-        {
-            StateMachine.TransitionTo(StateNames.Idle);
-        }
-
         var direction = (_chasingObject.Position - Character.Position).Normalized();
         Character.Position += direction * MoveSpeed * delta;
 
         if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
         {
             AnimationPlayer.FlipH = direction.X < 0;
-
             _currentDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
+        }
+        else if (direction.Y < 0)
+        {
+            _currentDirection = DirectionNames.UP;
         }
         else
         {
-            if (direction.Y < 0)
-            {
-                _currentDirection = DirectionNames.UP;
-            }
-            else
-            {
-                _currentDirection = DirectionNames.DOWN;
-            }
-        }     
+            _currentDirection = DirectionNames.DOWN;
+        }
 
         if(AnimationPlayer != null)
         {
@@ -83,18 +85,11 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     {
         if(body is ICharacter character)
         {
-            var attackNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Attack);
-            if(attackNode != null && attackNode is IInteractableState<ICharacter> interactableState)
+            if(_attackNode != null && _attackNode is IInteractableState<ICharacter> interactableState)
             {
                 interactableState.SetInteractableObject(character);
             }
-
-            if(attackNode != null && attackNode is IAttackableState attackableState)
-            {
-                attackableState.SetIsAttacking(true);
-            }
             
-            Exit();
             StateMachine.TransitionTo(StateNames.Attack);
         }     
     }
@@ -103,13 +98,6 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     {
         if(body is ICharacter && (CharacterBody2D)body == _chasingObject)
         {
-            var attackNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Attack);
-            if(attackNode != null && attackNode is IAttackableState attackableState)
-            {
-                attackableState.SetIsAttacking(false);
-            }
-
-            Exit();
             StateMachine.TransitionTo(StateNames.Chase);
         }
     }

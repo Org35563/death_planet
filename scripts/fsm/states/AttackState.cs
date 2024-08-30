@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class AttackState : State, IInteractableState<ICharacter>, IAttackableState
+public partial class AttackState : State, IInteractableState<ICharacter>
 {
     [Export]
     public AnimatedSprite2D AnimationPlayer;
@@ -20,8 +20,6 @@ public partial class AttackState : State, IInteractableState<ICharacter>, IAttac
 
     private string _attackDirection;
 
-    private bool _isAttacking;
-
     private Dictionary<string, string> _attackDict = new ()
     {
         { DirectionNames.RIGHT, AnimationNames.SIDE_ATTACK },
@@ -34,17 +32,12 @@ public partial class AttackState : State, IInteractableState<ICharacter>, IAttac
     {
         _attackCooldownTimer = GetNode<Timer>(StateNodeNames.AttackCooldownTimer);
         _attackDirection = DirectionNames.DOWN;
-    }
-
-    public override void Enter()
-    {
         _attackCooldownFinished = true;
-        _isAttacking = true;
     }
 
-    public override void _PhysicsProcess(double delta)
+    public override void PhysicsUpdate(float delta)
     {
-        if(_attackCooldownFinished && _attackingObject != null && _attackingObject.IsAlive() && _isAttacking)
+        if(_attackCooldownFinished && _attackingObject != null && _attackingObject.IsAlive())
         {
             SetAttackDirection();
             AnimationPlayer.Play(_attackDict[_attackDirection]);
@@ -53,14 +46,8 @@ public partial class AttackState : State, IInteractableState<ICharacter>, IAttac
             _attackCooldownFinished = false;
             _attackCooldownTimer.Start();
             GD.Print($"Attacking character health: {_attackingObject.GetHealth()}");
-            if(_attackingObject.IsAlive() == false)
-            {
-                _attackingObject = null;
-            }
         }
     }
-
-    public override void Exit() => _attackCooldownTimer.Stop();
 
     public void OnFsmAttackCooldownTimerTimeout()
     {
@@ -71,7 +58,7 @@ public partial class AttackState : State, IInteractableState<ICharacter>, IAttac
         }
         else
         {
-            Exit();
+            _attackingObject = null;
             StateMachine.TransitionTo(StateNames.Wander);
         }
     }
@@ -97,8 +84,4 @@ public partial class AttackState : State, IInteractableState<ICharacter>, IAttac
             _attackDirection = deltaY < 0 ? DirectionNames.UP : DirectionNames.DOWN;
         }      
     }
-
-    public bool GetIsAttacking() => _isAttacking;
-
-    public void SetIsAttacking(bool isAttacking) => _isAttacking = isAttacking;
 }

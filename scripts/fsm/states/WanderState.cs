@@ -23,10 +23,13 @@ public partial class WanderState : State, IMovableState
 
     private string _currentDirection;
 
+    private Node _idleNode;
+
     public override void _Ready()
     {
         _fsmMoveTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
+        _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
         ChaseArea.BodyEntered += OnChaseCollision;
     }
 
@@ -82,8 +85,7 @@ public partial class WanderState : State, IMovableState
 
     public void OnFsmWanderTimerTimeout()
     {
-        var idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
-        if(idleNode != null && idleNode is IMovableState movableState)
+        if(_idleNode != null && _idleNode is IMovableState movableState)
         {
             movableState.SetCurrentDirection(_currentDirection);
         }
@@ -98,7 +100,7 @@ public partial class WanderState : State, IMovableState
 
     public void OnChaseCollision(Node2D body)
     {
-        if(body is ICharacter character && character.IsAlive())
+        if(Global.IsCharacterAlive(body))
         {
             Exit();
             StateMachine.TransitionTo(StateNames.Chase);

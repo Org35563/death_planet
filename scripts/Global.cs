@@ -16,4 +16,6 @@ public static class Global
       source.GetNode<Node>(parentNodeName)
             .GetChildren()
             .FirstOrDefault(x => x.Name == searchNodeName);
+
+    public static bool IsCharacterAlive(Node body) => body is ICharacter character && character.IsAlive();
 }

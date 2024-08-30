@@ -376,7 +376,7 @@ radius = 49.0408
 radius = 7.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_q0d0u"]
-radius = 13.0384
+radius = 12.0
 
 [node name="enemy" type="CharacterBody2D"]
 y_sort_enabled = true
@@ -395,7 +395,7 @@ frame_progress = 0.234584
 offset = Vector2(0, 4)
 
 [node name="hero_detection_area" type="Area2D" parent="."]
-collision_layer = 2
+collision_layer = 0
 collision_mask = 2
 
 [node name="hero_detection_area_collision_shape" type="CollisionShape2D" parent="hero_detection_area"]
@@ -407,6 +407,8 @@ position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_aqrtr")
 
 [node name="enemy_hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
 
 [node name="enemy_hitbox_collision_shape" type="CollisionShape2D" parent="enemy_hitbox"]
 position = Vector2(0, -3)
@@ -431,7 +433,6 @@ MinTimerValue = 1
 MaxTimerValue = 3
 
 [node name="fsm_idle_timer" type="Timer" parent="state_machine/idle"]
-wait_time = 2.0
 
 [node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "ChaseArea")]
 script = ExtResource("5_5t2oc")
@@ -456,12 +457,10 @@ Character = NodePath("../..")
 AttackPower = 10
 
 [node name="fsm_attack_cooldown_timer" type="Timer" parent="state_machine/attack"]
-wait_time = 0.5
+one_shot = true
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]
-[connection signal="body_entered" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyEntered"]
-[connection signal="body_exited" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyExited"]
 [connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
 [connection signal="timeout" from="enemy_attack_cooldown_timer" to="." method="OnEnemyAttackCooldownTimerTimeout"]
 [connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]
