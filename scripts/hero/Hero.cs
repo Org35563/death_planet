@@ -1,6 +1,7 @@
 using Godot;
 
-public partial class Hero : CharacterBody2D, IHero
+// TODO: переработать с учётом новой механики AI врага
+public partial class Hero : CharacterBody2D, ICharacter //, IHero
 {
 	private IEnemy _closestEnemy;
 
@@ -44,7 +45,7 @@ public partial class Hero : CharacterBody2D, IHero
 
 		_movementDto = new HeroMovementDto
 		{
-			CurrentDirection = MoveDirectionNames.DOWN,
+			CurrentDirection = DirectionNames.DOWN,
 			Speed = (float) GetMeta(HeroMetadataNames.Speed)
 		};
 		
@@ -66,16 +67,6 @@ public partial class Hero : CharacterBody2D, IHero
 			Move();
 		}
 	}
-
-	public int GetHealth() => _health;
-
-    public void SetHealth(int newHealthValue) => _health = newHealthValue;
-
-    public void SetIsUnderAttack(bool isUnderAttack) => _isHeroUnderAttack = isUnderAttack;
-
-	public Vector2 GetCurrentPosition() => Position;
-
-	public bool IsAlive() => _isAlive;
 
 	#region Обработчики событий
 
@@ -150,6 +141,15 @@ public partial class Hero : CharacterBody2D, IHero
 
 	private void CheckIsHeroAlive()
 	{
+		if(_isAlive && _health <= 0)
+		{
+			_animationPlayer.Play(AnimationNames.DEATH); 
+			_heroDeathTimer.Start();
+			_isHeroUnderAttack = false;
+			_isAlive = false;
+		}
+
+		/*
 		if(_isHeroUnderAttack)
         {   
             if(_health <= 0)
@@ -160,5 +160,14 @@ public partial class Hero : CharacterBody2D, IHero
 				_isAlive = false;
             }
         }
+		*/
 	}
+
+    public bool IsAlive() => _isAlive;
+
+    public int GetHealth() => _health;
+
+    public void SetHealth(int newHealth) => _health = newHealth;
+
+    public Vector2 GetCurrentPosition() => Position;
 }

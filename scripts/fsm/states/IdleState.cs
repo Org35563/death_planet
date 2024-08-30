@@ -29,10 +29,10 @@ public partial class IdleState : State, IMovableState
 
     private Dictionary<string, string> _idlesDict = new ()
     {
-        { MoveDirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
-        { MoveDirectionNames.LEFT, AnimationNames.SIDE_IDLE },
-        { MoveDirectionNames.DOWN, AnimationNames.FRONT_IDLE },
-        { MoveDirectionNames.UP, AnimationNames.BACK_IDLE },  
+        { DirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
+        { DirectionNames.LEFT, AnimationNames.SIDE_IDLE },
+        { DirectionNames.DOWN, AnimationNames.FRONT_IDLE },
+        { DirectionNames.UP, AnimationNames.BACK_IDLE },  
     };
 
     public override void _Ready()
@@ -40,9 +40,9 @@ public partial class IdleState : State, IMovableState
         _fsmIdleTimer = GetNode<Timer>(StateNodeNames.IdleTimer);
         _random = new Random();
         _currentIdle = AnimationNames.FRONT_IDLE;
-        _currentDirection = MoveDirectionNames.DOWN;
-        ChaseArea.BodyEntered += OnBodyEntered;
-        ChaseArea.BodyExited += OnBodyExited;
+        _currentDirection = DirectionNames.DOWN;
+        ChaseArea.BodyEntered += OnChaseAreaBodyEntered;
+        ChaseArea.BodyExited += OnChaseAreaBodyExited;
     }
 
     public override void PhysicsUpdate(float delta) => Character.Velocity = Vector2.Zero;
@@ -66,15 +66,14 @@ public partial class IdleState : State, IMovableState
 
     public void OnFsmIdleTimerTimeout() => StateMachine.TransitionTo(StateNames.Wander);
 
-    public void OnBodyEntered(Node2D body)
+    public void OnChaseAreaBodyEntered(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(body is ICharacter character && character.IsAlive())
         {
-            Exit();
             var chaseNode = GetChaseNode();
-            if(chaseNode != null && chaseNode is IInteractableState interactableState)
+            if(chaseNode != null && chaseNode is IInteractableState<CharacterBody2D> interactableState)
             {
-                interactableState.SetInteractable((CharacterBody2D)body);
+                interactableState.SetInteractableObject((CharacterBody2D)body);
             }
 
             if(chaseNode != null && chaseNode is IMovableState movableState)
@@ -82,20 +81,26 @@ public partial class IdleState : State, IMovableState
                 movableState.SetCurrentDirection(_currentDirection);
             }
 
+            Exit();
             StateMachine.TransitionTo(StateNames.Chase);
+        }
+        else
+        {
+            Exit();
+            StateMachine.TransitionTo(StateNames.Wander);
         }
     }
 
-    public void OnBodyExited(Node2D body)
+    public void OnChaseAreaBodyExited(Node2D body)
     {
-        Exit();
         var chaseNode = GetChaseNode();
         if(chaseNode != null && chaseNode is IMovableState movableState)
         {
             _currentDirection = movableState.GetCurrentDirection();
         }
 
-        StateMachine.TransitionTo(StateNames.Idle);
+        Exit();
+        StateMachine.TransitionTo(StateNames.Wander);
     }
 
     public string GetCurrentDirection() => _currentDirection;

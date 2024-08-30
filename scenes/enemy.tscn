@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/fsm/states/IdleState.cs" id="4_bfrf5"]
 [ext_resource type="Script" path="res://scripts/fsm/states/WanderState.cs" id="5_5t2oc"]
 [ext_resource type="Script" path="res://scripts/fsm/states/ChaseState.cs" id="6_6i1pb"]
+[ext_resource type="Script" path="res://scripts/fsm/states/AttackState.cs" id="7_p2u8v"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s5ijh"]
 atlas = ExtResource("1_mpxr7")
@@ -374,9 +375,6 @@ radius = 49.0408
 [sub_resource type="CircleShape2D" id="CircleShape2D_aqrtr"]
 radius = 7.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_47cbu"]
-radius = 8.0
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_q0d0u"]
 radius = 13.0384
 
@@ -407,14 +405,6 @@ shape = SubResource("CircleShape2D_2ck5g")
 [node name="enemy_collision_shape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_aqrtr")
-
-[node name="enemy_stop_area" type="Area2D" parent="."]
-collision_layer = 2
-collision_mask = 2
-
-[node name="enemy_stop_area_collision_shape" type="CollisionShape2D" parent="enemy_stop_area"]
-position = Vector2(0, -3)
-shape = SubResource("CircleShape2D_47cbu")
 
 [node name="enemy_hitbox" type="Area2D" parent="."]
 
@@ -452,19 +442,28 @@ MoveSpeed = 35.0
 
 [node name="fsm_wander_timer" type="Timer" parent="state_machine/wander"]
 
-[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
+[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "AttackArea")]
 script = ExtResource("6_6i1pb")
 AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
+AttackArea = NodePath("../../enemy_hitbox")
 MoveSpeed = 50.0
+
+[node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
+script = ExtResource("7_p2u8v")
+AnimationPlayer = NodePath("../../enemy_animation")
+Character = NodePath("../..")
+AttackPower = 10
+
+[node name="fsm_attack_cooldown_timer" type="Timer" parent="state_machine/attack"]
+wait_time = 0.5
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]
-[connection signal="body_entered" from="enemy_stop_area" to="." method="OnStopAreaBodyEntered"]
-[connection signal="body_exited" from="enemy_stop_area" to="." method="OnStopAreaBodyExited"]
 [connection signal="body_entered" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyEntered"]
 [connection signal="body_exited" from="enemy_hitbox" to="." method="OnEnemyHitboxBodyExited"]
 [connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
 [connection signal="timeout" from="enemy_attack_cooldown_timer" to="." method="OnEnemyAttackCooldownTimerTimeout"]
 [connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]
 [connection signal="timeout" from="state_machine/wander/fsm_wander_timer" to="state_machine/wander" method="OnFsmWanderTimerTimeout"]
+[connection signal="timeout" from="state_machine/attack/fsm_attack_cooldown_timer" to="state_machine/attack" method="OnFsmAttackCooldownTimerTimeout"]

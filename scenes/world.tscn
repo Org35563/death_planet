@@ -116,6 +116,7 @@ collision_layer = 3
 collision_mask = 3
 motion_mode = 1
 metadata/Speed = 70.0
+metadata/Health = 50
 
 [node name="enemy" parent="." instance=ExtResource("5_f2rpn")]
 position = Vector2(206, 139)

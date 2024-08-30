@@ -4,7 +4,7 @@ using Godot;
 // TODO: скрипт будет удалён после переноса функционала в состояния
 public partial class Enemy : CharacterBody2D, IEnemy
 {
-    private IHero _closestHero;
+    private ICharacter _closestHero;
 
     private AnimatedSprite2D _animationPlayer;
 
@@ -48,18 +48,18 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     private Dictionary<string, string> _idlesDict = new ()
     {
-        { MoveDirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
-        { MoveDirectionNames.LEFT, AnimationNames.SIDE_IDLE },
-        { MoveDirectionNames.DOWN, AnimationNames.FRONT_IDLE },
-        { MoveDirectionNames.UP, AnimationNames.BACK_IDLE },  
+        { DirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
+        { DirectionNames.LEFT, AnimationNames.SIDE_IDLE },
+        { DirectionNames.DOWN, AnimationNames.FRONT_IDLE },
+        { DirectionNames.UP, AnimationNames.BACK_IDLE },  
     };
 
     private Dictionary<string, string> _attackDict = new ()
     {
-        { MoveDirectionNames.RIGHT, AnimationNames.SIDE_ATTACK },
-        { MoveDirectionNames.LEFT, AnimationNames.SIDE_ATTACK },
-        { MoveDirectionNames.DOWN, AnimationNames.FRONT_ATTACK },
-        { MoveDirectionNames.UP, AnimationNames.BACK_ATTACK },  
+        { DirectionNames.RIGHT, AnimationNames.SIDE_ATTACK },
+        { DirectionNames.LEFT, AnimationNames.SIDE_ATTACK },
+        { DirectionNames.DOWN, AnimationNames.FRONT_ATTACK },
+        { DirectionNames.UP, AnimationNames.BACK_ATTACK },  
     };
 
     public override void _Ready()
@@ -70,7 +70,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
         _isAlive = true;
         _isEnemyUnderAttack = false;
-        _currentDirection = MoveDirectionNames.DOWN;
+        _currentDirection = DirectionNames.DOWN;
 
         _enemyDeathTimer = GetNode<Timer>(EnemyNodeNames.DeathTimer);
         _enemyAttackCooldownTimer = GetNode<Timer>(EnemyNodeNames.AttackCooldownTimer);
@@ -104,16 +104,16 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public void OnHeroDetectionAreaBodyEntered(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(Global.IsGameUnitType<ICharacter>(body))
         {
-            _closestHero = (IHero)body;
+            _closestHero = (ICharacter)body;
             _heroChase = true;
         }
     }
 
     public void OnHeroDetectionAreaBodyExited(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(Global.IsGameUnitType<ICharacter>(body))
         {
             _closestHero = null;
             _heroChase = false;
@@ -122,7 +122,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public void  OnStopAreaBodyEntered(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(Global.IsGameUnitType<ICharacter>(body))
         {
             _stopMovement = true;
         }    
@@ -130,7 +130,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public void OnStopAreaBodyExited(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(Global.IsGameUnitType<ICharacter>(body))
         {
             _stopMovement = false;
         } 
@@ -138,7 +138,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public void OnEnemyHitboxBodyEntered(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(Global.IsGameUnitType<ICharacter>(body))
         {
             _heroInAttackZone = true;
         }
@@ -146,7 +146,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
 
     public void OnEnemyHitboxBodyExited(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(Global.IsGameUnitType<ICharacter>(body))
         {
             _heroInAttackZone = false;
         }
@@ -163,7 +163,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
         _enemyAttackCooldownTimer.Stop();
         _isEnemyAttacking = false;
         _enemyAttackCooldownFinished = true;
-        _closestHero.SetIsUnderAttack(false);
+        // _closestHero.SetIsUnderAttack(false);
     }
 
     #endregion
@@ -174,7 +174,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
         {
             if(_heroChase && !_stopMovement)
             {
-                Vector2 direction = (_closestHero.GetCurrentPosition() - Position).Normalized();
+                Vector2 direction = (Position).Normalized();
                 Position += direction * _speed * delta;
                 var animationName = string.Empty;
                 if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
@@ -182,7 +182,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
                     // Движение влево или вправо
                     animationName = AnimationNames.SIDE_WALK;
                     _animationPlayer.FlipH = direction.X < 0;
-                    _currentDirection = _animationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
+                    _currentDirection = _animationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
                 }
                 else
                 {
@@ -190,13 +190,13 @@ public partial class Enemy : CharacterBody2D, IEnemy
                     {
                         // Движение вверх
                         animationName = AnimationNames.BACK_WALK;
-                        _currentDirection = MoveDirectionNames.UP;
+                        _currentDirection = DirectionNames.UP;
                     }
                     else
                     {
                         // Движение вниз
                         animationName = AnimationNames.FRONT_WALK;
-                        _currentDirection = MoveDirectionNames.DOWN;
+                        _currentDirection = DirectionNames.DOWN;
                     }
                 }
 
@@ -218,7 +218,7 @@ public partial class Enemy : CharacterBody2D, IEnemy
             _animationPlayer.Play(_attackDict[_currentDirection]);
 
             _closestHero.SetHealth(_closestHero.GetHealth() - _attackPower);
-            _closestHero.SetIsUnderAttack(true);
+            // _closestHero.SetIsUnderAttack(true);
             _isEnemyAttacking = true;
             _enemyAttackCooldownFinished = false;
             _enemyAttackCooldownTimer.Start();

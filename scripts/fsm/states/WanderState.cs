@@ -53,17 +53,17 @@ public partial class WanderState : State, IMovableState
             animationName = AnimationNames.SIDE_WALK;
             AnimationPlayer.FlipH = _moveDirection.X < 0;
 
-            _currentDirection = AnimationPlayer.FlipH ? MoveDirectionNames.RIGHT : MoveDirectionNames.LEFT;
+            _currentDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
         }
         else if (_moveDirection.Y < 0)
         {
             animationName = AnimationNames.BACK_WALK;
-            _currentDirection = MoveDirectionNames.UP;
+            _currentDirection = DirectionNames.UP;
         }
         else
         {
             animationName = AnimationNames.FRONT_WALK;
-            _currentDirection = MoveDirectionNames.DOWN;
+            _currentDirection = DirectionNames.DOWN;
         }
 
         if(AnimationPlayer != null)
@@ -88,6 +88,7 @@ public partial class WanderState : State, IMovableState
             movableState.SetCurrentDirection(_currentDirection);
         }
 
+        Exit();
         StateMachine.TransitionTo(StateNames.Idle);
     }
 
@@ -97,9 +98,15 @@ public partial class WanderState : State, IMovableState
 
     public void OnChaseCollision(Node2D body)
     {
-        if(Global.IsGameUnitType<IHero>(body))
+        if(body is ICharacter character && character.IsAlive())
         {
+            Exit();
             StateMachine.TransitionTo(StateNames.Chase);
+        }
+        else
+        {
+            Exit();
+            StateMachine.TransitionTo(StateNames.Idle);
         }
     }
 }

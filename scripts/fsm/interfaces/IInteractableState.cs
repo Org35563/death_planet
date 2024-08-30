@@ -1,8 +1,6 @@
-using Godot;
-
-public interface IInteractableState
+public interface IInteractableState<T>
 {
-    public CharacterBody2D GetInteractable();
+    public T GetInteractableObject();
 
-    public void SetInteractable(CharacterBody2D interactable);
+    public void SetInteractableObject(T interactableObject);
 }

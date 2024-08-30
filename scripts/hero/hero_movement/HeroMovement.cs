@@ -5,30 +5,30 @@ public static class HeroMovement
     public static HeroMovementDto Move(HeroMovementDto movementDto)
 	{
 		var newVelocity = default(Vector2);
-        var newDirection = MoveDirectionNames.NONE;
+        var newDirection = DirectionNames.NONE;
         var isWalking = false;
 		if(Input.IsActionPressed("ui_right"))
 		{
 			newVelocity = GetNewVelocity(movementDto.Velocity, movementDto.Speed, 0);
-            newDirection = MoveDirectionNames.RIGHT;
+            newDirection = DirectionNames.RIGHT;
             isWalking = true;
 		}
 		else if (Input.IsActionPressed("ui_left"))
 		{
 			newVelocity = GetNewVelocity(movementDto.Velocity, -movementDto.Speed, 0);
-            newDirection = MoveDirectionNames.LEFT;
+            newDirection = DirectionNames.LEFT;
             isWalking = true;
 		}
 		else if (Input.IsActionPressed("ui_down"))
 		{
 			newVelocity = GetNewVelocity(movementDto.Velocity, 0, movementDto.Speed);
-            newDirection = MoveDirectionNames.DOWN;
+            newDirection = DirectionNames.DOWN;
             isWalking = true;
 		}
 		else if (Input.IsActionPressed("ui_up"))
 		{
 			newVelocity = GetNewVelocity(movementDto.Velocity, 0, -movementDto.Speed);
-            newDirection = MoveDirectionNames.UP;
+            newDirection = DirectionNames.UP;
             isWalking = true;
 		}
 		else 
@@ -36,7 +36,7 @@ public static class HeroMovement
 			newVelocity = GetNewVelocity(movementDto.Velocity, 0, 0);
 		}
 
-        if(newDirection != MoveDirectionNames.NONE)
+        if(newDirection != DirectionNames.NONE)
         {        
             movementDto.CurrentDirection = newDirection;
         }
