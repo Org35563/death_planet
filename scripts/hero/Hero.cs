@@ -1,9 +1,9 @@
 using Godot;
 
 // TODO: переработать с учётом новой механики AI врага
-public partial class Hero : CharacterBody2D, ICharacter //, IHero
+public partial class Hero : CharacterBody2D, ICharacter
 {
-	private IEnemy _closestEnemy;
+	private ICharacter _closestEnemy;
 
 	private AnimatedSprite2D _animationPlayer;
 
@@ -31,7 +31,7 @@ public partial class Hero : CharacterBody2D, ICharacter //, IHero
 	
 	private int _health;
 
-	private bool _isAlive;
+	private bool _isAlive { get => _health >= 0; }
 
 	private int _attackPower;
 
@@ -41,7 +41,6 @@ public partial class Hero : CharacterBody2D, ICharacter //, IHero
     {
 		_health = (int) GetMeta(HeroMetadataNames.Health);
 		_attackPower = (int) GetMeta(HeroMetadataNames.AttackPower); 
-		_isAlive = true;
 
 		_movementDto = new HeroMovementDto
 		{
@@ -72,16 +71,16 @@ public partial class Hero : CharacterBody2D, ICharacter //, IHero
 
 	public void OnHeroAttackAreaBodyEntered(Node2D body)
 	{
-		if(Global.IsGameUnitType<IEnemy>(body))
-		{
+		if(Global.IsGameUnitType<ICharacter>(body))
+		{	
 			_enemyInAttackRange = true;
-			_closestEnemy = (IEnemy)body;
+			_closestEnemy = (ICharacter)body;
 		}
 	}
 
 	public void OnHeroAttackAreaBodyExited(Node2D body)
 	{
-		if(Global.IsGameUnitType<IEnemy>(body))
+		if(Global.IsGameUnitType<ICharacter>(body))
 		{
 			_enemyInAttackRange = false;
 			_closestEnemy = null;
@@ -131,7 +130,6 @@ public partial class Hero : CharacterBody2D, ICharacter //, IHero
 			if(_enemyInAttackRange && _closestEnemy != null && _heroAttackCooldownFinished)
 			{
 				_closestEnemy.SetHealth(_closestEnemy.GetHealth() - _attackPower);
-				_closestEnemy.SetIsUnderAttack(true);
 				_heroAttackCooldownFinished = false;
 				_heroAttackCooldownTimer.Start();
 				GD.Print($"Enemy health: {_closestEnemy.GetHealth()}");
@@ -141,26 +139,12 @@ public partial class Hero : CharacterBody2D, ICharacter //, IHero
 
 	private void CheckIsHeroAlive()
 	{
-		if(_isAlive && _health <= 0)
+		if(!_isAlive)
 		{
 			_animationPlayer.Play(AnimationNames.DEATH); 
 			_heroDeathTimer.Start();
 			_isHeroUnderAttack = false;
-			_isAlive = false;
 		}
-
-		/*
-		if(_isHeroUnderAttack)
-        {   
-            if(_health <= 0)
-            {
-                _animationPlayer.Play(AnimationNames.DEATH); 
-                _heroDeathTimer.Start();
-                _isHeroUnderAttack = false;
-				_isAlive = false;
-            }
-        }
-		*/
 	}
 
     public bool IsAlive() => _isAlive;
