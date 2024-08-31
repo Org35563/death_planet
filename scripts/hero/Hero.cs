@@ -1,8 +1,17 @@
 using Godot;
 
 // TODO: переработать с учётом новой механики AI врага
-public partial class Hero : CharacterBody2D, ILivingCreature
+public partial class Hero : CharacterBody2D, ICombatCreature
 {
+	[Export]
+	public int Health;
+
+	[Export]
+	public float MoveSpeed;
+
+	[Export]
+	public int AttackPower;
+
 	private ILivingCreature _closestEnemy;
 
 	private AnimatedSprite2D _animationPlayer;
@@ -15,8 +24,6 @@ public partial class Hero : CharacterBody2D, ILivingCreature
 
 	private HeroMovementDto _movementDto;
 
-	#region Свойства атаки героя
-
 	private bool _enemyInAttackRange = false;
 
 	private bool _heroAttackCooldownFinished = true;
@@ -25,27 +32,14 @@ public partial class Hero : CharacterBody2D, ILivingCreature
 
 	private bool _isHeroUnderAttack = false;
 
-	#endregion
-
-	#region Характеристики героя
-	
-	private int _health;
-
-	private bool _isAlive { get => _health >= 0; }
-
-	private int _attackPower;
-
-	#endregion
+	private bool _isAlive { get => Health > 0; }
 
     public override void _Ready()
     {
-		_health = (int) GetMeta(HeroMetadataNames.Health);
-		_attackPower = (int) GetMeta(HeroMetadataNames.AttackPower); 
-
 		_movementDto = new HeroMovementDto
 		{
 			CurrentDirection = DirectionNames.DOWN,
-			Speed = (float) GetMeta(HeroMetadataNames.Speed)
+			Speed = MoveSpeed
 		};
 		
 		_heroAttackTimer = GetNode<Timer>(HeroNodeNames.AttackTimer);
@@ -129,7 +123,7 @@ public partial class Hero : CharacterBody2D, ILivingCreature
 
 			if(_enemyInAttackRange && _closestEnemy != null && _heroAttackCooldownFinished)
 			{
-				_closestEnemy.SetHealth(_closestEnemy.GetHealth() - _attackPower);
+				_closestEnemy.SetHealth(_closestEnemy.GetHealth() - AttackPower);
 				_heroAttackCooldownFinished = false;
 				_heroAttackCooldownTimer.Start();
 				GD.Print($"Enemy health: {_closestEnemy.GetHealth()}");
@@ -149,9 +143,17 @@ public partial class Hero : CharacterBody2D, ILivingCreature
 
     public bool IsAlive() => _isAlive;
 
-    public int GetHealth() => _health;
+    public int GetHealth() => Health;
 
-    public void SetHealth(int newHealth) => _health = newHealth;
+    public void SetHealth(int newHealth) => Health = newHealth;
 
     public Vector2 GetCurrentPosition() => Position;
+
+    public float GetMoveSpeed() => MoveSpeed;
+
+    public float SetMoveSpeed(float newSpeed) => MoveSpeed = newSpeed;
+
+    public int GetAttackPower() => AttackPower;
+
+    public int SetAttackPower(int newAttackPower) => AttackPower = newAttackPower;
 }

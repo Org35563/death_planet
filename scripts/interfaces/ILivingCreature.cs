@@ -9,4 +9,8 @@ public interface ILivingCreature
     public bool IsAlive();
 
     public Vector2 GetCurrentPosition();
+
+    public float GetMoveSpeed();
+
+    public float SetMoveSpeed(float newSpeed);
 }

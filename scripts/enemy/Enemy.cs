@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class Enemy : CharacterBody2D, ILivingCreature
+public partial class Enemy : CharacterBody2D, ICombatCreature
 {
     [Export]
     public int Health;
@@ -18,4 +18,12 @@ public partial class Enemy : CharacterBody2D, ILivingCreature
     public int GetHealth() => Health;
 
     public void SetHealth(int newHealth) => Health = newHealth;
+
+    public float GetMoveSpeed() => MoveSpeed;
+
+    public float SetMoveSpeed(float newSpeed) => MoveSpeed = newSpeed;
+
+    public int GetAttackPower() => AttackPower;
+
+    public int SetAttackPower(int newAttackPower) => AttackPower = newAttackPower;
 }

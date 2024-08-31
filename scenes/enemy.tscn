@@ -385,8 +385,6 @@ collision_layer = 3
 collision_mask = 3
 script = ExtResource("1_kg176")
 Health = 100
-MoveSpeed = 50.0
-AttackPower = 5
 
 [node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
@@ -439,7 +437,8 @@ script = ExtResource("5_5t2oc")
 AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
 ChaseArea = NodePath("../../hero_detection_area")
-MoveSpeed = 35.0
+MinTimerValue = 1
+MaxTimerValue = 4
 
 [node name="fsm_wander_timer" type="Timer" parent="state_machine/wander"]
 
@@ -448,13 +447,11 @@ script = ExtResource("6_6i1pb")
 AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
 AttackArea = NodePath("../../enemy_hitbox")
-MoveSpeed = 50.0
 
 [node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
 script = ExtResource("7_p2u8v")
 AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
-AttackPower = 10
 
 [node name="fsm_attack_cooldown_timer" type="Timer" parent="state_machine/attack"]
 one_shot = true

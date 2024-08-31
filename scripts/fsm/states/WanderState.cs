@@ -13,7 +13,10 @@ public partial class WanderState : State, IMovableState
     public Area2D ChaseArea;
 
     [Export]
-    public float MoveSpeed;
+    public int MinTimerValue;
+
+    [Export]
+    public int MaxTimerValue;
 
     private Timer _fsmWanderTimer;
 
@@ -25,8 +28,15 @@ public partial class WanderState : State, IMovableState
 
     private Node _idleNode;
 
+    private float _wanderingSpeed;
+
     public override void _Ready()
     {
+        if(Character is ICombatCreature combatCreature)
+        {
+            _wanderingSpeed = combatCreature.GetMoveSpeed();
+        }
+
         _fsmWanderTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
         _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
@@ -35,7 +45,7 @@ public partial class WanderState : State, IMovableState
 
     public override void PhysicsUpdate(float delta)
     {
-        Character.Velocity = _moveDirection * MoveSpeed;
+        Character.Velocity = _moveDirection * _wanderingSpeed;
         Character.MoveAndSlide();
     }
 
@@ -78,7 +88,7 @@ public partial class WanderState : State, IMovableState
 
         if(_fsmWanderTimer != null)
         {
-            _fsmWanderTimer.WaitTime = _random.Next(1, 3);
+            _fsmWanderTimer.WaitTime = _random.Next(MinTimerValue, MaxTimerValue);
             _fsmWanderTimer.Start(); 
         }
     }

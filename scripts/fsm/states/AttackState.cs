@@ -9,9 +9,6 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
     [Export]
     public CharacterBody2D Character;
 
-    [Export]
-    public int AttackPower;
-
     private Timer _attackCooldownTimer;
 
     private ILivingCreature _attackingObject;
@@ -19,6 +16,8 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
     private bool _attackCooldownFinished;
 
     private string _attackDirection;
+
+    private int _attackPower;
 
     private Dictionary<string, string> _attackDict = new ()
     {
@@ -30,6 +29,11 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
 
     public override void _Ready()
     {
+        if(Character is ICombatCreature combatCreature)
+        {
+            _attackPower = combatCreature.GetAttackPower();
+        }
+
         _attackCooldownTimer = GetNode<Timer>(StateNodeNames.AttackCooldownTimer);
         _attackDirection = DirectionNames.DOWN;
         _attackCooldownFinished = true;
@@ -47,7 +51,7 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
             SetAttackDirection();
             AnimationPlayer.Play(_attackDict[_attackDirection]);
 
-            _attackingObject.SetHealth(_attackingObject.GetHealth() - AttackPower);
+            _attackingObject.SetHealth(_attackingObject.GetHealth() - _attackPower);
             _attackCooldownFinished = false;
             _attackCooldownTimer.Start();
             GD.Print($"Attacking character health: {_attackingObject.GetHealth()}");

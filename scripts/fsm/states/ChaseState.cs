@@ -12,9 +12,6 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     [Export]
     public Area2D AttackArea;
 
-    [Export]
-    public float MoveSpeed;
-
     private CharacterBody2D _chasingObject;
 
     private string _currentDirection;
@@ -22,6 +19,8 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     private bool _isCharacterStopped;
 
     private Node _attackNode;
+
+    private float _chasingSpeed;
 
     private Dictionary<string, string> _chasesDict = new ()
     {
@@ -33,6 +32,11 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public override void _Ready()
     {
+        if(Character is ICombatCreature combatCreature)
+        {
+            _chasingSpeed = combatCreature.GetMoveSpeed();
+        }
+
         AttackArea.BodyEntered += OnAttackAreaBodyEntered;
         AttackArea.BodyExited += OnAttackAreaBodyExited;
         _attackNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Attack);
@@ -48,7 +52,7 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     public override void PhysicsUpdate(float delta)
     {
         var direction = (_chasingObject.Position - Character.Position).Normalized();
-        Character.Position += direction * MoveSpeed * delta;
+        Character.Position += direction * _chasingSpeed * delta;
 
         if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
         {
@@ -82,10 +86,7 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public void OnAttackAreaBodyEntered(Node2D body)
     {
-        if(Global.IsCreatureAlive(Character) == false)
-        {
-            return;
-        }
+        StateMachine.TryTransitionToDeath(Character);
 
         if(body is ILivingCreature character)
         {
@@ -100,10 +101,7 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public void OnAttackAreaBodyExited(Node2D body)
     {
-        if(Global.IsCreatureAlive(Character) == false)
-        {
-            return;
-        }
+        StateMachine.TryTransitionToDeath(Character);
 
         if(body is ILivingCreature && (CharacterBody2D)body == _chasingObject)
         {
