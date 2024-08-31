@@ -382,7 +382,7 @@ position = Vector2(0, -13)
 shape = SubResource("CircleShape2D_6fkwq")
 
 [node name="enemy_death_timer" type="Timer" parent="."]
-wait_time = 3.0
+wait_time = 1.5
 one_shot = true
 
 [node name="state_machine" type="Node" parent="."]
@@ -428,6 +428,7 @@ AnimationPlayer = NodePath("../../bear_animation")
 Character = NodePath("../..")
 
 [node name="fsm_death_timer" type="Timer" parent="state_machine/death"]
+wait_time = 1.5
 
 [connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
 [connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]

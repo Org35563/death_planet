@@ -10,25 +10,27 @@ public partial class DeathState : State
 
     private Timer _fsmDeathTimer;
 
+    private bool _alreadyDead;
 
     public override void _Ready()
     {
         _fsmDeathTimer = GetNode<Timer>(StateNodeNames.DeathTimer);
+        _alreadyDead = false;
     }
 
     public override void Enter()
-    {
-        GD.Print($"{Character.Name} DEATH!");
-        AnimationPlayer.Play(AnimationNames.DEATH);
-        if(_fsmDeathTimer != null)
+    {      
+        if(_fsmDeathTimer != null && !_alreadyDead)
         {
+            AnimationPlayer.Play(AnimationNames.DEATH);
             _fsmDeathTimer.Start();
+            _alreadyDead = true;
         }
     }
 
     public void OnFsmDeathTimerTimeout()
     {
-        _fsmDeathTimer.Stop();
         Character.QueueFree();
+        Character.Dispose();
     }
 }

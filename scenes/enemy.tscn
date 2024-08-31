@@ -414,7 +414,7 @@ position = Vector2(0, -3)
 shape = SubResource("CircleShape2D_q0d0u")
 
 [node name="enemy_death_timer" type="Timer" parent="."]
-wait_time = 3.0
+wait_time = 1.5
 one_shot = true
 
 [node name="state_machine" type="Node" parent="."]
@@ -461,6 +461,7 @@ AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
 
 [node name="fsm_death_timer" type="Timer" parent="state_machine/death"]
+wait_time = 1.5
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]
