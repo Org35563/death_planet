@@ -41,6 +41,8 @@ public partial class WanderState : State, IMovableState
 
     public override void Enter()
     {  
+        StateMachine.TryTransitionToDeath(Character);
+
         while(true)
         {
             _moveDirection = new Vector2(_random.Next(-1, 2), _random.Next(-1, 2)).Normalized();
@@ -100,7 +102,12 @@ public partial class WanderState : State, IMovableState
 
     public void OnChaseCollision(Node2D body)
     {
-        if(Global.IsCharacterAlive(body))
+        if(Global.IsCreatureAlive(Character) == false)
+        {
+            return;
+        }
+
+        if(Global.IsCreatureAlive(body))
         {
             Exit();
             StateMachine.TransitionTo(StateNames.Chase);

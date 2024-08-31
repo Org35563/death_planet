@@ -1,9 +1,9 @@
 using Godot;
 
 // TODO: переработать с учётом новой механики AI врага
-public partial class Hero : CharacterBody2D, ICharacter
+public partial class Hero : CharacterBody2D, ILivingCreature
 {
-	private ICharacter _closestEnemy;
+	private ILivingCreature _closestEnemy;
 
 	private AnimatedSprite2D _animationPlayer;
 
@@ -71,16 +71,16 @@ public partial class Hero : CharacterBody2D, ICharacter
 
 	public void OnHeroAttackAreaBodyEntered(Node2D body)
 	{
-		if(Global.IsGameUnitType<ICharacter>(body))
+		if(Global.IsGameUnitType<ILivingCreature>(body))
 		{	
 			_enemyInAttackRange = true;
-			_closestEnemy = (ICharacter)body;
+			_closestEnemy = (ILivingCreature)body;
 		}
 	}
 
 	public void OnHeroAttackAreaBodyExited(Node2D body)
 	{
-		if(Global.IsGameUnitType<ICharacter>(body))
+		if(Global.IsGameUnitType<ILivingCreature>(body))
 		{
 			_enemyInAttackRange = false;
 			_closestEnemy = null;

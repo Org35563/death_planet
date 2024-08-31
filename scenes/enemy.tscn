@@ -379,22 +379,21 @@ radius = 7.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_q0d0u"]
 radius = 12.0
 
-[node name="enemy" type="CharacterBody2D" node_paths=PackedStringArray("AnimationPlayer")]
+[node name="enemy" type="CharacterBody2D"]
 y_sort_enabled = true
 collision_layer = 3
 collision_mask = 3
 script = ExtResource("1_kg176")
-AnimationPlayer = NodePath("enemy_animation")
-metadata/AttackPower = 5
-metadata/Speed = 50.0
-metadata/Health = 100
+Health = 100
+MoveSpeed = 50.0
+AttackPower = 5
 
 [node name="enemy_animation" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -10)
 sprite_frames = SubResource("SpriteFrames_04oe6")
-animation = &"death"
-frame = 4
-frame_progress = 1.0
+animation = &"front_idle"
+frame = 3
+frame_progress = 0.460459
 offset = Vector2(0, 4)
 
 [node name="hero_detection_area" type="Area2D" parent="."]
@@ -460,8 +459,12 @@ AttackPower = 10
 [node name="fsm_attack_cooldown_timer" type="Timer" parent="state_machine/attack"]
 one_shot = true
 
-[node name="death" type="Node" parent="state_machine"]
+[node name="death" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
 script = ExtResource("8_sc0j5")
+AnimationPlayer = NodePath("../../enemy_animation")
+Character = NodePath("../..")
+
+[node name="fsm_death_timer" type="Timer" parent="state_machine/death"]
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]
@@ -469,3 +472,4 @@ script = ExtResource("8_sc0j5")
 [connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]
 [connection signal="timeout" from="state_machine/wander/fsm_wander_timer" to="state_machine/wander" method="OnFsmWanderTimerTimeout"]
 [connection signal="timeout" from="state_machine/attack/fsm_attack_cooldown_timer" to="state_machine/attack" method="OnFsmAttackCooldownTimerTimeout"]
+[connection signal="timeout" from="state_machine/death/fsm_death_timer" to="state_machine/death" method="OnFsmDeathTimerTimeout"]

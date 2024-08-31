@@ -48,10 +48,15 @@ public partial class IdleState : State, IMovableState
         ChaseArea.BodyExited += OnChaseAreaBodyExited;
     }
 
-    public override void PhysicsUpdate(float delta) => Character.Velocity = Vector2.Zero;
+    public override void PhysicsUpdate(float delta)
+    {
+        Character.Velocity = Vector2.Zero;
+    } 
 
     public override void Enter()
     {   
+        StateMachine.TryTransitionToDeath(Character);
+
         _currentIdle = _idlesDict[_currentDirection];
         if(AnimationPlayer != null)
         {
@@ -71,7 +76,12 @@ public partial class IdleState : State, IMovableState
 
     public void OnChaseAreaBodyEntered(Node2D body)
     {
-        if(Global.IsCharacterAlive(body))
+        if(Global.IsCreatureAlive(Character) == false)
+        {
+            return;
+        }
+
+        if(Global.IsCreatureAlive(body))
         {
             if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
             {
@@ -95,6 +105,11 @@ public partial class IdleState : State, IMovableState
 
     public void OnChaseAreaBodyExited(Node2D body)
     {
+        if(Global.IsCreatureAlive(Character) == false)
+        {
+            return;
+        }
+
         if(_chaseNode != null && _chaseNode is IMovableState movableState)
         {
             _currentDirection = movableState.GetCurrentDirection();

@@ -17,5 +17,5 @@ public static class Global
             .GetChildren()
             .FirstOrDefault(x => x.Name == searchNodeName);
 
-    public static bool IsCharacterAlive(Node body) => body is ICharacter character && character.IsAlive();
+    public static bool IsCreatureAlive(Node body) => body is ILivingCreature creature && creature.IsAlive();
 }

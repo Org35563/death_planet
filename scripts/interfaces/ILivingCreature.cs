@@ -1,6 +1,6 @@
 using Godot;
 
-public interface ICharacter
+public interface ILivingCreature
 {
     public int GetHealth();
 

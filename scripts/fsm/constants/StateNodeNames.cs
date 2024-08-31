@@ -7,4 +7,6 @@ public static class StateNodeNames
     public const string IdleTimer = "fsm_idle_timer";
 
     public const string AttackCooldownTimer = "fsm_attack_cooldown_timer";
+
+    public const string DeathTimer = "fsm_death_timer";
 }

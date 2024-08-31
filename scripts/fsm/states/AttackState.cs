@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class AttackState : State, IInteractableState<ICharacter>
+public partial class AttackState : State, IInteractableState<ILivingCreature>
 {
     [Export]
     public AnimatedSprite2D AnimationPlayer;
@@ -14,7 +14,7 @@ public partial class AttackState : State, IInteractableState<ICharacter>
 
     private Timer _attackCooldownTimer;
 
-    private ICharacter _attackingObject;
+    private ILivingCreature _attackingObject;
 
     private bool _attackCooldownFinished;
 
@@ -35,6 +35,11 @@ public partial class AttackState : State, IInteractableState<ICharacter>
         _attackCooldownFinished = true;
     }
 
+    public override void Enter()
+    {
+        StateMachine.TryTransitionToDeath(Character);
+    }
+
     public override void PhysicsUpdate(float delta)
     {
         if(_attackCooldownFinished && _attackingObject != null && _attackingObject.IsAlive())
@@ -52,6 +57,9 @@ public partial class AttackState : State, IInteractableState<ICharacter>
     public void OnFsmAttackCooldownTimerTimeout()
     {
         _attackCooldownTimer.Stop();
+
+        StateMachine.TryTransitionToDeath(Character);
+
         if(_attackingObject.IsAlive())
         {
             _attackCooldownFinished = true;
@@ -63,9 +71,9 @@ public partial class AttackState : State, IInteractableState<ICharacter>
         }
     }
 
-    public ICharacter GetInteractableObject()  => _attackingObject;
+    public ILivingCreature GetInteractableObject()  => _attackingObject;
 
-    public void SetInteractableObject(ICharacter interactableObject)  => _attackingObject = interactableObject;
+    public void SetInteractableObject(ILivingCreature interactableObject)  => _attackingObject = interactableObject;
 
     private void SetAttackDirection()
     {

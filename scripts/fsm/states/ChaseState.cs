@@ -40,10 +40,9 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public override void Enter()
     {
-        if(_chasingObject is ICharacter character && (character == null || !character.IsAlive()))
-        {
-            StateMachine.TransitionTo(StateNames.Wander);
-        }
+        StateMachine.TryTransitionToDeath(Character);
+
+        StateMachine.TryTransitionToWander(_chasingObject);
     }
 
     public override void PhysicsUpdate(float delta)
@@ -83,9 +82,14 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public void OnAttackAreaBodyEntered(Node2D body)
     {
-        if(body is ICharacter character)
+        if(Global.IsCreatureAlive(Character) == false)
         {
-            if(_attackNode != null && _attackNode is IInteractableState<ICharacter> interactableState)
+            return;
+        }
+
+        if(body is ILivingCreature character)
+        {
+            if(_attackNode != null && _attackNode is IInteractableState<ILivingCreature> interactableState)
             {
                 interactableState.SetInteractableObject(character);
             }
@@ -96,7 +100,12 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public void OnAttackAreaBodyExited(Node2D body)
     {
-        if(body is ICharacter && (CharacterBody2D)body == _chasingObject)
+        if(Global.IsCreatureAlive(Character) == false)
+        {
+            return;
+        }
+
+        if(body is ILivingCreature && (CharacterBody2D)body == _chasingObject)
         {
             StateMachine.TransitionTo(StateNames.Chase);
         }
