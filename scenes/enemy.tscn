@@ -394,6 +394,7 @@ frame_progress = 0.460459
 offset = Vector2(0, 4)
 
 [node name="hero_detection_area" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 2
 
@@ -431,21 +432,23 @@ MaxTimerValue = 3
 
 [node name="fsm_idle_timer" type="Timer" parent="state_machine/idle"]
 
-[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "ChaseArea")]
+[node name="wander" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "ChaseArea", "RayCast")]
 script = ExtResource("5_5t2oc")
 AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
 ChaseArea = NodePath("../../hero_detection_area")
+RayCast = NodePath("../../enemy_raycast")
 MinTimerValue = 1
 MaxTimerValue = 4
 
 [node name="fsm_wander_timer" type="Timer" parent="state_machine/wander"]
 
-[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "AttackArea")]
+[node name="chase" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "AttackArea", "RayCast")]
 script = ExtResource("6_6i1pb")
 AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
 AttackArea = NodePath("../../enemy_hitbox")
+RayCast = NodePath("../../enemy_raycast")
 
 [node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
 script = ExtResource("7_p2u8v")
@@ -462,6 +465,10 @@ Character = NodePath("../..")
 
 [node name="fsm_death_timer" type="Timer" parent="state_machine/death"]
 wait_time = 1.5
+
+[node name="enemy_raycast" type="RayCast2D" parent="."]
+target_position = Vector2(0, 11)
+collision_mask = 7
 
 [connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
 [connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]

@@ -13,6 +13,9 @@ public partial class WanderState : State, IMovableState
     public Area2D ChaseArea;
 
     [Export]
+    public RayCast2D RayCast;
+
+    [Export]
     public int MinTimerValue;
 
     [Export]
@@ -36,7 +39,7 @@ public partial class WanderState : State, IMovableState
         {
             _wanderingSpeed = combatCreature.GetMoveSpeed();
         }
-
+        
         _fsmWanderTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
         _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
@@ -45,22 +48,28 @@ public partial class WanderState : State, IMovableState
 
     public override void PhysicsUpdate(float delta)
     {
-        Character.Velocity = _moveDirection * _wanderingSpeed;
-        Character.MoveAndSlide();
+        if(RayCast != null)
+        {
+            SetRayCastDirection();
+
+            if(RayCast.IsColliding())
+            {
+                GenerateRandomCoords();
+            }          
+        }
+        
+        if(IsOnArea(_moveDirection * _wanderingSpeed))
+        {
+            Character.Velocity = _moveDirection * _wanderingSpeed;
+            Character.MoveAndSlide();
+        }
     }
 
     public override void Enter()
     {  
         StateMachine.TryTransitionToDeath(Character);
 
-        while(true)
-        {
-            _moveDirection = new Vector2(_random.Next(-1, 2), _random.Next(-1, 2)).Normalized();
-            if(_moveDirection.X != 0 || _moveDirection.Y != 0)
-            {
-                break;
-            }
-        }
+        GenerateRandomCoords();
 
         var animationName = string.Empty;
         if (Mathf.Abs(_moveDirection.X) > Mathf.Abs(_moveDirection.Y))
@@ -127,5 +136,112 @@ public partial class WanderState : State, IMovableState
             Exit();
             StateMachine.TransitionTo(StateNames.Idle);
         }
+    }
+
+    private void GenerateRandomCoords()
+    {
+        while(true)
+        {
+            _moveDirection = new Vector2(_random.Next(-1, 2), _random.Next(-1, 2)).Normalized();
+            if(_moveDirection.X != 0 || _moveDirection.Y != 0)
+            {
+                break;
+            }
+        }
+    }
+
+    // TODO: отрефакторить
+    private void SetRayCastDirection()
+    {
+        var x = 15;
+        var y = 15;
+        var velocity = Character.Velocity;
+        if (velocity.X != 0 && velocity.Y != 0)
+        {
+            if (velocity.X > 0 && velocity.Y > 0)
+            {
+                // print("Движется по диагонали вправо вниз");
+                x *= 1;
+                y *= 1;
+            }
+            else if(velocity.X > 0 && velocity.Y < 0)
+            {
+                // print("Движется по диагонали вправо вверх");
+                x *= 1;
+                y *= -1;
+            }
+            else if(velocity.X < 0 && velocity.Y > 0)
+            {
+                // print("Движется по диагонали влево вниз");
+                x *= -1;
+                y *= 1;
+            }            
+            else if(velocity.X < 0 && velocity.Y < 0)
+            {
+                // print("Движется по диагонали влево вверх");
+                x *= -1;
+                y *= -1;
+            }  
+        }        
+        else
+        {
+            if(velocity.X > 0)
+            {
+                // print("Движется вправо");
+                x *= 1;
+                y *= 0;
+            }
+            else if(velocity.X < 0)
+            {
+                // print("Движется влево");
+                x *= -1;
+                y *= 0;
+            }   
+            else if(velocity.Y > 0)
+            {
+                // print("Движется вниз");
+                x *= 0;
+                y *= 1;
+            }          
+            else if(velocity.Y < 0)
+            {
+                // print("Движется вверх");
+                x *= 0;
+                y *= -1;
+            }             
+        }
+
+        RayCast.TargetPosition = new Vector2(x, y);
+    }
+
+    private bool IsOnArea(Vector2 positionToCheck)
+    {
+        var node1 = GetParent();
+        var node2 = node1.GetParent();
+        var node3 = node2.GetParent();
+
+        var area = node3.GetNode<Area2D>("slime_area");
+
+        if(area != null)
+        {
+            var areaBounds = GetWorldBoundaries(area, "slime_area_collision_shape");
+            if (areaBounds.HasPoint(Character.Position + positionToCheck))
+            {
+                return true;              
+            }
+        }
+
+        return false;
+    }
+
+    private Rect2 GetWorldBoundaries(Area2D area, string areaCollisionShapeName)
+    {
+        // Получаем позицию и размер Area2D
+        var child = area.GetNode<CollisionShape2D>(areaCollisionShapeName);
+        Vector2 position = child.Position;
+        Vector2 size = child.Shape.GetRect().Size;
+
+        // Создаем Rect2, представляющий границы Area2D
+        return new Rect2(position - size / 2, size);
     }
 }

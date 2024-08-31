@@ -11,6 +11,10 @@ public partial class Enemy : CharacterBody2D, ICombatCreature
     [Export]
     public int AttackPower;
 
+    private bool _isOnArea;
+
+    public override void _Ready() => _isOnArea = true;
+
     public bool IsAlive() => Health > 0;
 
     public Vector2 GetCurrentPosition() => Position;

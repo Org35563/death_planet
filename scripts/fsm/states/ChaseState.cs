@@ -12,6 +12,9 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     [Export]
     public Area2D AttackArea;
 
+    [Export]
+    public RayCast2D RayCast;
+
     private CharacterBody2D _chasingObject;
 
     private string _currentDirection;
@@ -28,6 +31,14 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
         { DirectionNames.LEFT, AnimationNames.SIDE_WALK },
         { DirectionNames.DOWN, AnimationNames.FRONT_WALK },
         { DirectionNames.UP, AnimationNames.BACK_WALK },  
+    };
+
+    private Dictionary<string, Vector2> _chasesRayCastDict = new ()
+    {
+        { DirectionNames.RIGHT, new Vector2(-15, 0) },
+        { DirectionNames.LEFT, new Vector2(15 ,0) },
+        { DirectionNames.DOWN, new Vector2(0, 15) },
+        { DirectionNames.UP, new Vector2(0, -15) },  
     };
 
     public override void _Ready()
@@ -72,6 +83,11 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
         {
             AnimationPlayer.Play(_chasesDict[_currentDirection]);
         }  
+
+        if(RayCast != null)
+        {
+            RayCast.TargetPosition = _chasesRayCastDict[_currentDirection];
+        }
 
         Character.MoveAndSlide();
     }

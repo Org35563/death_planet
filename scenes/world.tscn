@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://d1gv65y66vrqw" path="res://scenes/hero.tscn" id="4_n02ml"]
 [ext_resource type="PackedScene" uid="uid://4ajsqoi0aos5" path="res://scenes/enemy.tscn" id="5_f2rpn"]
 [ext_resource type="Shader" path="res://scenes/shaders/fog.gdshader" id="6_kmh0t"]
-[ext_resource type="PackedScene" uid="uid://c3euyctwlroho" path="res://scenes/bear.tscn" id="8_77inp"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hv1co"]
 texture = ExtResource("2_d2ui8")
@@ -95,6 +94,9 @@ shader_parameter/density = 0.6
 shader_parameter/speed = Vector2(0.01, 0.01)
 shader_parameter/noise_texture = SubResource("NoiseTexture2D_aur0p")
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_j4yes"]
+radius = 126.004
+
 [node name="world" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("1_sswgo")
@@ -111,7 +113,7 @@ tile_set = SubResource("TileSet_ea08n")
 
 [node name="hero" parent="." instance=ExtResource("4_n02ml")]
 y_sort_enabled = true
-position = Vector2(182, 178)
+position = Vector2(80, 219)
 disable_mode = 1
 motion_mode = 1
 Health = 100
@@ -131,15 +133,6 @@ offset_right = 1154.0
 offset_bottom = 656.0
 color = Color(0.984462, 0.744709, 0.19319, 1)
 
-[node name="bear" parent="." instance=ExtResource("8_77inp")]
-position = Vector2(319, 295)
-collision_layer = 4
-collision_mask = 3
-motion_mode = 1
-Health = 10
-MoveSpeed = 40.0
-AttackPower = 10
-
 [node name="enemy" parent="." instance=ExtResource("5_f2rpn")]
 position = Vector2(300, 132)
 collision_layer = 4
@@ -147,3 +140,13 @@ motion_mode = 1
 Health = 100
 MoveSpeed = 40.0
 AttackPower = 10
+
+[node name="slime_area" type="Area2D" parent="."]
+collision_mask = 4
+
+[node name="slime_area_collision_shape" type="CollisionShape2D" parent="slime_area"]
+position = Vector2(306, 141)
+shape = SubResource("CircleShape2D_j4yes")
+
+[connection signal="body_entered" from="slime_area" to="." method="OnSlimeAreaBodyEntered"]
+[connection signal="body_exited" from="slime_area" to="." method="OnSlimeAreaBodyExited"]
