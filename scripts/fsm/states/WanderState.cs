@@ -15,7 +15,7 @@ public partial class WanderState : State, IMovableState
     [Export]
     public float MoveSpeed;
 
-    private Timer _fsmMoveTimer;
+    private Timer _fsmWanderTimer;
 
     private Random _random;
 
@@ -27,7 +27,7 @@ public partial class WanderState : State, IMovableState
 
     public override void _Ready()
     {
-        _fsmMoveTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
+        _fsmWanderTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
         _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
         ChaseArea.BodyEntered += OnChaseCollision;
@@ -76,14 +76,14 @@ public partial class WanderState : State, IMovableState
             AnimationPlayer.Play(animationName);
         }
 
-        if(_fsmMoveTimer != null)
+        if(_fsmWanderTimer != null)
         {
-            _fsmMoveTimer.WaitTime = _random.Next(1, 3);
-            _fsmMoveTimer.Start(); 
+            _fsmWanderTimer.WaitTime = _random.Next(1, 3);
+            _fsmWanderTimer.Start(); 
         }
     }
 
-    public override void Exit() => _fsmMoveTimer.Stop();
+    public override void Exit() => _fsmWanderTimer.Stop();
 
     public void OnFsmWanderTimerTimeout()
     {
