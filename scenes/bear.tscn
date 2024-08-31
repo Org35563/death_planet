@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://c3euyctwlroho"]
+[gd_scene load_steps=54 format=3 uid="uid://c3euyctwlroho"]
 
 [ext_resource type="Texture2D" uid="uid://4svdgsnulnai" path="res://art/characters/bear/Bear.png" id="1_deaqv"]
 [ext_resource type="Script" path="res://scripts/enemy/Enemy.cs" id="1_r8id1"]
@@ -57,6 +57,22 @@ region = Rect2(48, 144, 24, 24)
 [sub_resource type="AtlasTexture" id="AtlasTexture_2h2tn"]
 atlas = ExtResource("1_deaqv")
 region = Rect2(72, 144, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6p05b"]
+atlas = ExtResource("1_deaqv")
+region = Rect2(0, 288, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jxr8"]
+atlas = ExtResource("1_deaqv")
+region = Rect2(24, 288, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j0m07"]
+atlas = ExtResource("1_deaqv")
+region = Rect2(48, 288, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_emmac"]
+atlas = ExtResource("1_deaqv")
+region = Rect2(72, 288, 24, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_re8ld"]
 atlas = ExtResource("2_fsamy")
@@ -209,6 +225,23 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_6p05b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jxr8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j0m07")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_emmac")
+}],
+"loop": false,
+"name": &"death",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_re8ld")
 }, {
 "duration": 1.0,
@@ -326,7 +359,6 @@ script = ExtResource("1_r8id1")
 scale = Vector2(2.875, 2.66667)
 sprite_frames = SubResource("SpriteFrames_433aw")
 animation = &"front_idle"
-frame_progress = 0.454792
 offset = Vector2(0, -6)
 
 [node name="hero_detection_area" type="Area2D" parent="."]
@@ -350,6 +382,8 @@ position = Vector2(0, -13)
 shape = SubResource("CircleShape2D_6fkwq")
 
 [node name="enemy_death_timer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
 
 [node name="state_machine" type="Node" parent="."]
 script = ExtResource("3_5ljci")

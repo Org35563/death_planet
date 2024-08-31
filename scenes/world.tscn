@@ -1,10 +1,11 @@
-[gd_scene load_steps=16 format=4 uid="uid://cn1pxlrmsyioc"]
+[gd_scene load_steps=17 format=4 uid="uid://cn1pxlrmsyioc"]
 
 [ext_resource type="Script" path="res://scripts/world/World.cs" id="1_sswgo"]
 [ext_resource type="Texture2D" uid="uid://rxpw5snfum5c" path="res://art/tilesets/plains.png" id="1_uhn2u"]
 [ext_resource type="Texture2D" uid="uid://5oibted8kmjw" path="res://art/tilesets/grass.png" id="2_d2ui8"]
 [ext_resource type="Texture2D" uid="uid://4ysu8b22omqi" path="res://art/objects/objects.png" id="3_84xbh"]
 [ext_resource type="PackedScene" uid="uid://d1gv65y66vrqw" path="res://scenes/hero.tscn" id="4_n02ml"]
+[ext_resource type="PackedScene" uid="uid://4ajsqoi0aos5" path="res://scenes/enemy.tscn" id="5_f2rpn"]
 [ext_resource type="Shader" path="res://scenes/shaders/fog.gdshader" id="6_kmh0t"]
 [ext_resource type="PackedScene" uid="uid://c3euyctwlroho" path="res://scenes/bear.tscn" id="8_77inp"]
 
@@ -135,6 +136,14 @@ position = Vector2(319, 295)
 collision_layer = 4
 collision_mask = 3
 motion_mode = 1
-Health = 200
+Health = 10
 MoveSpeed = 40.0
 AttackPower = 40
+
+[node name="enemy" parent="." instance=ExtResource("5_f2rpn")]
+position = Vector2(300, 132)
+collision_layer = 4
+motion_mode = 1
+Health = 100
+MoveSpeed = 40.0
+AttackPower = 10
