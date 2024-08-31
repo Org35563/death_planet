@@ -117,7 +117,7 @@ public partial class WanderState : State, IMovableState
             return;
         }
 
-        if(Global.IsCreatureAlive(body))
+        if(body != null && Global.IsCreatureAlive(body))
         {
             Exit();
             StateMachine.TransitionTo(StateNames.Chase);

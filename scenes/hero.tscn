@@ -476,6 +476,7 @@ drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
 [node name="hero_death_timer" type="Timer" parent="."]
+one_shot = true
 
 [connection signal="body_entered" from="hero_attack_area" to="." method="OnHeroAttackAreaBodyEntered"]
 [connection signal="body_exited" from="hero_attack_area" to="." method="OnHeroAttackAreaBodyExited"]

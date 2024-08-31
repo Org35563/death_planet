@@ -88,7 +88,7 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     {
         StateMachine.TryTransitionToDeath(Character);
 
-        if(body is ILivingCreature character)
+        if(body != null && body is ILivingCreature character)
         {
             if(_attackNode != null && _attackNode is IInteractableState<ILivingCreature> interactableState)
             {
@@ -103,7 +103,7 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
     {
         StateMachine.TryTransitionToDeath(Character);
 
-        if(body is ILivingCreature && (CharacterBody2D)body == _chasingObject)
+        if(body != null && body is ILivingCreature && (CharacterBody2D)body == _chasingObject)
         {
             StateMachine.TransitionTo(StateNames.Chase);
         }

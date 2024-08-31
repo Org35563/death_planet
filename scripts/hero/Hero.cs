@@ -30,12 +30,14 @@ public partial class Hero : CharacterBody2D, ICombatCreature
 
 	private bool _isHeroAttacking = false;
 
-	private bool _isHeroUnderAttack = false;
-
 	private bool _isAlive { get => Health > 0; }
+
+	private bool _alreadyDeath;
 
     public override void _Ready()
     {
+		_alreadyDeath = false;
+
 		_movementDto = new HeroMovementDto
 		{
 			CurrentDirection = DirectionNames.DOWN,
@@ -133,11 +135,11 @@ public partial class Hero : CharacterBody2D, ICombatCreature
 
 	private void CheckIsHeroAlive()
 	{
-		if(!_isAlive)
+		if(_isAlive == false && _alreadyDeath == false)
 		{
-			_animationPlayer.Play(AnimationNames.DEATH); 
+			_animationPlayer.Play(AnimationNames.DEATH);
+			_alreadyDeath = true;
 			_heroDeathTimer.Start();
-			_isHeroUnderAttack = false;
 		}
 	}
 

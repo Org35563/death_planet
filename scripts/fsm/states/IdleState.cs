@@ -81,7 +81,7 @@ public partial class IdleState : State, IMovableState
             return;
         }
 
-        if(Global.IsCreatureAlive(body))
+        if(body != null && Global.IsCreatureAlive(body))
         {
             if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
             {
