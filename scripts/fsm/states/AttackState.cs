@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Godot;
 
 public partial class AttackState : State, IInteractableState<ILivingCreature>
@@ -15,17 +14,7 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
 
     private bool _attackCooldownFinished;
 
-    private string _attackDirection;
-
     private int _attackPower;
-
-    private Dictionary<string, string> _attackDict = new ()
-    {
-        { DirectionNames.RIGHT, AnimationNames.SIDE_ATTACK },
-        { DirectionNames.LEFT, AnimationNames.SIDE_ATTACK },
-        { DirectionNames.DOWN, AnimationNames.FRONT_ATTACK },
-        { DirectionNames.UP, AnimationNames.BACK_ATTACK },  
-    };
 
     public override void _Ready()
     {
@@ -35,7 +24,6 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
         }
 
         _attackCooldownTimer = GetNode<Timer>(StateNodeNames.AttackCooldownTimer);
-        _attackDirection = DirectionNames.DOWN;
         _attackCooldownFinished = true;
     }
 
@@ -48,8 +36,7 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
     {
         if(_attackCooldownFinished && _attackingObject != null && _attackingObject.IsAlive())
         {
-            SetAttackDirection();
-            AnimationPlayer.Play(_attackDict[_attackDirection]);
+            PlayAttackAnimation();
 
             _attackingObject.SetHealth(_attackingObject.GetHealth() - _attackPower);
             _attackCooldownFinished = false;
@@ -79,21 +66,26 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
 
     public void SetInteractableObject(ILivingCreature interactableObject)  => _attackingObject = interactableObject;
 
-    private void SetAttackDirection()
+    private void PlayAttackAnimation()
     {
         var attackingObjectPosition = _attackingObject.GetCurrentPosition();
 
         float deltaX = attackingObjectPosition.X - Character.Position.X;
         float deltaY = attackingObjectPosition.Y - Character.Position.Y;
 
+        var attackDirection = DirectionNames.NONE;
         if (Mathf.Abs(deltaX) > Mathf.Abs(deltaY))
         {
             AnimationPlayer.FlipH = deltaX < 0;
-            _attackDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
+            attackDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
         }
         else
         {
-            _attackDirection = deltaY < 0 ? DirectionNames.UP : DirectionNames.DOWN;
-        }      
+            attackDirection = deltaY < 0 ? DirectionNames.UP : DirectionNames.DOWN;
+        }
+
+        var attackAnimationName = Global.GetAttackAnimationNameByDirection(attackDirection);
+
+        AnimationPlayer.Play(attackAnimationName);
     }
 }

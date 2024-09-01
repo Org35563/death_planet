@@ -17,77 +17,68 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     private CharacterBody2D _chasingObject;
 
-    private string _currentDirection;
-
-    private bool _isCharacterStopped;
+    private string _currentMoveDirectionName;
 
     private Node _attackNode;
 
-    private float _chasingSpeed;
+    private float _moveSpeed;
 
-    private Dictionary<string, string> _chasesDict = new ()
-    {
-        { DirectionNames.RIGHT, AnimationNames.SIDE_WALK },
-        { DirectionNames.LEFT, AnimationNames.SIDE_WALK },
-        { DirectionNames.DOWN, AnimationNames.FRONT_WALK },
-        { DirectionNames.UP, AnimationNames.BACK_WALK },  
-    };
+    private Dictionary<string, Vector2> _chasesRayCastDict;
 
-    private Dictionary<string, Vector2> _chasesRayCastDict = new ()
-    {
-        { DirectionNames.RIGHT, new Vector2(-15, 0) },
-        { DirectionNames.LEFT, new Vector2(15 ,0) },
-        { DirectionNames.DOWN, new Vector2(0, 15) },
-        { DirectionNames.UP, new Vector2(0, -15) },  
-    };
+    private float _rayCastLength = 20.0f;
+
+    private Area2D _sourceArea;
+
+    private bool _isOnSourceArea;
 
     public override void _Ready()
     {
         if(Character is ICombatCreature combatCreature)
         {
-            _chasingSpeed = combatCreature.GetMoveSpeed();
+            _moveSpeed = combatCreature.GetMoveSpeed();
         }
+
+        _chasesRayCastDict = new ()
+        {
+            { DirectionNames.RIGHT, new Vector2(-_rayCastLength, 0) },
+            { DirectionNames.LEFT, new Vector2(_rayCastLength ,0) },
+            { DirectionNames.DOWN, new Vector2(0, _rayCastLength) },
+            { DirectionNames.UP, new Vector2(0, -_rayCastLength) },  
+        };
 
         AttackArea.BodyEntered += OnAttackAreaBodyEntered;
         AttackArea.BodyExited += OnAttackAreaBodyExited;
         _attackNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Attack);
+
+        _isOnSourceArea = true;
+        _sourceArea = GetNode("../../../").GetNode<Area2D>("slime_area");
+
+        _sourceArea.BodyEntered += OnSourceAreaBodyEntered;
+        _sourceArea.BodyExited += OnSourceAreaBodyExited;
     }
 
     public override void Enter()
     {
+        // GD.Print("on chase state");
         StateMachine.TryTransitionToDeath(Character);
 
-        StateMachine.TryTransitionToWander(_chasingObject);
+        TryTransitionToWander();
     }
 
     public override void PhysicsUpdate(float delta)
     {
         var direction = (_chasingObject.Position - Character.Position).Normalized();
-        Character.Position += direction * _chasingSpeed * delta;
 
-        if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
-        {
-            AnimationPlayer.FlipH = direction.X < 0;
-            _currentDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
-        }
-        else if (direction.Y < 0)
-        {
-            _currentDirection = DirectionNames.UP;
-        }
-        else
-        {
-            _currentDirection = DirectionNames.DOWN;
-        }
+        Character.Position += direction * _moveSpeed * delta;
 
-        if(AnimationPlayer != null)
-        {
-            AnimationPlayer.Play(_chasesDict[_currentDirection]);
-        }  
+        var newDirectionName = Global.GetNewMoveDirectionName(direction);
 
-        if(RayCast != null)
-        {
-            RayCast.TargetPosition = _chasesRayCastDict[_currentDirection];
-        }
+        _currentMoveDirectionName = newDirectionName;
+
+        AnimationPlayer.PlayMoveAnimation(newDirectionName, direction.X < 0);
+
+        // TODO: Добавить избегание препятствий
+        SetNewRayCastDirection(newDirectionName);
 
         Character.MoveAndSlide();
     }
@@ -96,9 +87,9 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public void SetInteractableObject(CharacterBody2D interactable) => _chasingObject = interactable;
 
-    public string GetCurrentDirection() => _currentDirection;
+    public string GetCurrentDirection() => _currentMoveDirectionName;
 
-    public void SetCurrentDirection(string direction) => _currentDirection = direction;
+    public void SetCurrentDirection(string direction) => _currentMoveDirectionName = direction;
 
     public void OnAttackAreaBodyEntered(Node2D body)
     {
@@ -122,6 +113,52 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
         if(body != null && body is ILivingCreature && (CharacterBody2D)body == _chasingObject)
         {
             StateMachine.TransitionTo(StateNames.Chase);
+        }
+    }
+
+    private void SetNewRayCastDirection(string currentDirectionName)
+    {
+        if(RayCast != null)
+        {
+            RayCast.TargetPosition = _chasesRayCastDict[currentDirectionName];
+        }
+    }
+
+    public void TryTransitionToWander()
+    {
+        var collisionShape = _sourceArea.GetNode<CollisionShape2D>("slime_area_collision_shape");
+        if(_chasingObject.Name == "area2d")
+        {
+            _chasingObject = new CharacterBody2D() { Position = new Vector2(collisionShape.Position.X, collisionShape.Position.Y) };
+
+            GD.Print(_sourceArea.Name);
+
+            return;
+        }
+
+        if(_isOnSourceArea && (_chasingObject == null || !Global.IsCreatureAlive(_chasingObject)))
+        {
+            GD.Print("TransitionTo(StateNames.Wander)");
+            _chasingObject = null;
+            StateMachine.TransitionTo(StateNames.Wander);
+        }
+    }
+
+    public void OnSourceAreaBodyEntered(Node2D body)
+    {
+        if(body is CharacterBody2D characterBody  && characterBody == Character)
+        {
+            GD.Print("OnSourceAreaBodyEntered");
+            _isOnSourceArea = true;
+        }
+    }
+
+    public void OnSourceAreaBodyExited(Node2D body)
+    {
+        if(body is CharacterBody2D characterBody  && characterBody == Character)
+        {   
+            GD.Print("OnSourceAreaBodyExited");
+            _isOnSourceArea = false;
         }
     }
 }

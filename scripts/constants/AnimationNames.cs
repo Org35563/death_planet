@@ -21,4 +21,6 @@ public static class AnimationNames
 	public const string DEATH = "death";
 
 	public const string DEATH_IDLE = "death_idle";
+
+	public const string NONE = "none";
 }

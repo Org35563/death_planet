@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 
 public partial class IdleState : State, IMovableState
@@ -25,43 +24,23 @@ public partial class IdleState : State, IMovableState
 
     private Node _chaseNode;
 
-    private string _currentIdle;
-
     private string _currentDirection;
-
-    private Dictionary<string, string> _idlesDict = new ()
-    {
-        { DirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
-        { DirectionNames.LEFT, AnimationNames.SIDE_IDLE },
-        { DirectionNames.DOWN, AnimationNames.FRONT_IDLE },
-        { DirectionNames.UP, AnimationNames.BACK_IDLE },  
-    };
 
     public override void _Ready()
     {
         _fsmIdleTimer = GetNode<Timer>(StateNodeNames.IdleTimer);
         _random = new Random();
         _chaseNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
-        _currentIdle = AnimationNames.FRONT_IDLE;
         _currentDirection = DirectionNames.DOWN;
         ChaseArea.BodyEntered += OnChaseAreaBodyEntered;
         ChaseArea.BodyExited += OnChaseAreaBodyExited;
     }
 
-    public override void PhysicsUpdate(float delta)
-    {
-        Character.Velocity = Vector2.Zero;
-    } 
-
     public override void Enter()
     {   
         StateMachine.TryTransitionToDeath(Character);
 
-        _currentIdle = _idlesDict[_currentDirection];
-        if(AnimationPlayer != null)
-        {
-            AnimationPlayer.Play(_currentIdle);
-        }
+        PlayIdleAnimation();
 
         if(_fsmIdleTimer != null)
         {
@@ -122,4 +101,13 @@ public partial class IdleState : State, IMovableState
     public string GetCurrentDirection() => _currentDirection;
 
     public void SetCurrentDirection(string direction) => _currentDirection = direction;
+
+    private void PlayIdleAnimation()
+    {
+        var idleAnimationName = Global.GetIdleAnimationNameByDirection(_currentDirection);
+        if(AnimationPlayer != null)
+        {
+            AnimationPlayer.Play(idleAnimationName);
+        }
+    }
 }

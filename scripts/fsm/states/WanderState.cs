@@ -25,13 +25,19 @@ public partial class WanderState : State, IMovableState
 
     private Random _random;
 
-    private Vector2 _moveDirection;
+    private Vector2 _currentMoveDirection;
 
-    private string _currentDirection;
+    private string _currentMoveDirectionName;
 
     private Node _idleNode;
 
+    private Node _chaseNode;
+
     private float _wanderingSpeed;
+
+    private float _rayCastLength = 20.0f;
+
+    private Area2D _validMoveArea;
 
     public override void _Ready()
     {
@@ -40,60 +46,47 @@ public partial class WanderState : State, IMovableState
             _wanderingSpeed = combatCreature.GetMoveSpeed();
         }
         
+        _validMoveArea = GetNode("../../../").GetNode<Area2D>("slime_area");
+
         _fsmWanderTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
         _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
+        _chaseNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
         ChaseArea.BodyEntered += OnChaseCollision;
     }
 
     public override void PhysicsUpdate(float delta)
     {
-        if(RayCast != null)
-        {
-            SetRayCastDirection();
+        CheckCollisionsWithBarriers();
 
-            if(RayCast.IsColliding())
-            {
-                GenerateRandomCoords();
-            }          
-        }
-        
-        if(IsOnArea(_moveDirection * _wanderingSpeed))
+        var newPosition = _currentMoveDirection * _wanderingSpeed * delta;
+        if(IsCharacterOnValidArea(newPosition))
         {
-            Character.Velocity = _moveDirection * _wanderingSpeed;
-            Character.MoveAndSlide();
+            // GD.Print("valid area!");
+            Character.Position += newPosition;
         }
+        else
+        {
+            // GD.Print("wrong area!");
+            TransitionToChaseToValidArea();
+        }
+
+        Character.MoveAndSlide();
     }
 
     public override void Enter()
     {  
+        // GD.Print("on wander state");
+
         StateMachine.TryTransitionToDeath(Character);
 
-        GenerateRandomCoords();
+        _currentMoveDirection = GetNewRandomMoveDirection();
 
-        var animationName = string.Empty;
-        if (Mathf.Abs(_moveDirection.X) > Mathf.Abs(_moveDirection.Y))
-        {
-            animationName = AnimationNames.SIDE_WALK;
-            AnimationPlayer.FlipH = _moveDirection.X < 0;
+        var newDirectionName = Global.GetNewMoveDirectionName(_currentMoveDirection);
 
-            _currentDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
-        }
-        else if (_moveDirection.Y < 0)
-        {
-            animationName = AnimationNames.BACK_WALK;
-            _currentDirection = DirectionNames.UP;
-        }
-        else
-        {
-            animationName = AnimationNames.FRONT_WALK;
-            _currentDirection = DirectionNames.DOWN;
-        }
+        _currentMoveDirectionName = newDirectionName;
 
-        if(AnimationPlayer != null)
-        {
-            AnimationPlayer.Play(animationName);
-        }
+        AnimationPlayer.PlayMoveAnimation(newDirectionName, _currentMoveDirection.X < 0);
 
         if(_fsmWanderTimer != null)
         {
@@ -104,20 +97,11 @@ public partial class WanderState : State, IMovableState
 
     public override void Exit() => _fsmWanderTimer.Stop();
 
-    public void OnFsmWanderTimerTimeout()
-    {
-        if(_idleNode != null && _idleNode is IMovableState movableState)
-        {
-            movableState.SetCurrentDirection(_currentDirection);
-        }
+    public void OnFsmWanderTimerTimeout() => TransitionToIdle();
 
-        Exit();
-        StateMachine.TransitionTo(StateNames.Idle);
-    }
+    public string GetCurrentDirection() => _currentMoveDirectionName;
 
-    public string GetCurrentDirection() => _currentDirection;
-
-    public void SetCurrentDirection(string direction) => _currentDirection = direction;
+    public void SetCurrentDirection(string direction) => _currentMoveDirectionName = direction;
 
     public void OnChaseCollision(Node2D body)
     {
@@ -128,6 +112,16 @@ public partial class WanderState : State, IMovableState
 
         if(body != null && Global.IsCreatureAlive(body))
         {
+            if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
+            {
+                interactableState.SetInteractableObject((CharacterBody2D)body);
+            }
+
+            if(_chaseNode != null && _chaseNode is IMovableState movableState)
+            {
+                movableState.SetCurrentDirection(_currentMoveDirectionName);
+            }
+
             Exit();
             StateMachine.TransitionTo(StateNames.Chase);
         }
@@ -138,93 +132,74 @@ public partial class WanderState : State, IMovableState
         }
     }
 
-    private void GenerateRandomCoords()
+    private Vector2 GetNewRandomMoveDirection()
     {
-        while(true)
+        var newMoveDirection = Vector2.Zero;
+        while(newMoveDirection.X == 0 || newMoveDirection.Y == 0)
         {
-            _moveDirection = new Vector2(_random.Next(-1, 2), _random.Next(-1, 2)).Normalized();
-            if(_moveDirection.X != 0 || _moveDirection.Y != 0)
+            newMoveDirection = new Vector2(_random.Next(-1, 2), _random.Next(-1, 2)).Normalized();
+        }
+
+        return newMoveDirection;
+    }
+
+    private void SetNewRayCastDirection(Vector2 moveDirection)
+    {
+        var velocity = moveDirection * _wanderingSpeed;
+
+        int xDirection = velocity.X > 0 ? 1 : (velocity.X < 0 ? -1 : 0);
+        int yDirection = velocity.Y > 0 ? 1 : (velocity.Y < 0 ? -1 : 0);
+
+        Vector2 targetPosition = new (_rayCastLength * xDirection, _rayCastLength * yDirection);
+
+        RayCast.TargetPosition = targetPosition;
+    }
+
+    private void TransitionToIdle()
+    {
+        if(_idleNode != null && _idleNode is IMovableState movableState)
+        {
+            movableState.SetCurrentDirection(_currentMoveDirectionName);
+        }
+
+        Exit();
+        StateMachine.TransitionTo(StateNames.Idle);
+    }
+
+    private void TransitionToChaseToValidArea()
+    {
+        if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
+        {
+            interactableState.SetInteractableObject(new CharacterBody2D(){ Name = "area2d", Position = _validMoveArea.Position });
+        }
+
+        if(_chaseNode != null && _chaseNode is IMovableState movableState)
+        {
+            movableState.SetCurrentDirection(_currentMoveDirectionName);
+        }
+
+        Exit();
+        StateMachine.TransitionTo(StateNames.Chase);
+    }
+
+    private void CheckCollisionsWithBarriers()
+    {
+        if(RayCast != null)
+        {
+            SetNewRayCastDirection(_currentMoveDirection);
+
+            if(RayCast.IsColliding())
             {
-                break;
-            }
+                TransitionToIdle();
+            }         
         }
     }
 
-    // TODO: отрефакторить
-    private void SetRayCastDirection()
+    private bool IsCharacterOnValidArea(Vector2 positionToCheck)
     {
-        var x = 15;
-        var y = 15;
-        var velocity = Character.Velocity;
-        if (velocity.X != 0 && velocity.Y != 0)
+        if(_validMoveArea != null)
         {
-            if (velocity.X > 0 && velocity.Y > 0)
-            {
-                // print("Движется по диагонали вправо вниз");
-                x *= 1;
-                y *= 1;
-            }
-            else if(velocity.X > 0 && velocity.Y < 0)
-            {
-                // print("Движется по диагонали вправо вверх");
-                x *= 1;
-                y *= -1;
-            }
-            else if(velocity.X < 0 && velocity.Y > 0)
-            {
-                // print("Движется по диагонали влево вниз");
-                x *= -1;
-                y *= 1;
-            }            
-            else if(velocity.X < 0 && velocity.Y < 0)
-            {
-                // print("Движется по диагонали влево вверх");
-                x *= -1;
-                y *= -1;
-            }  
-        }        
-        else
-        {
-            if(velocity.X > 0)
-            {
-                // print("Движется вправо");
-                x *= 1;
-                y *= 0;
-            }
-            else if(velocity.X < 0)
-            {
-                // print("Движется влево");
-                x *= -1;
-                y *= 0;
-            }   
-            else if(velocity.Y > 0)
-            {
-                // print("Движется вниз");
-                x *= 0;
-                y *= 1;
-            }          
-            else if(velocity.Y < 0)
-            {
-                // print("Движется вверх");
-                x *= 0;
-                y *= -1;
-            }             
-        }
-
-        RayCast.TargetPosition = new Vector2(x, y);
-    }
-
-    private bool IsOnArea(Vector2 positionToCheck)
-    {
-        var node1 = GetParent();
-        var node2 = node1.GetParent();
-        var node3 = node2.GetParent();
-
-        var area = node3.GetNode<Area2D>("slime_area");
-
-        if(area != null)
-        {
-            var areaBounds = GetWorldBoundaries(area, "slime_area_collision_shape");
+            var areaBounds = GetWorldBoundaries(_validMoveArea, "slime_area_collision_shape");
             if (areaBounds.HasPoint(Character.Position + positionToCheck))
             {
                 return true;              
