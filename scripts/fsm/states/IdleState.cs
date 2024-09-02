@@ -104,7 +104,7 @@ public partial class IdleState : State, IMovableState
 
     private void PlayIdleAnimation()
     {
-        var idleAnimationName = Global.GetIdleAnimationNameByDirection(_currentDirection);
+        var idleAnimationName = AnimationHelper.GetIdleAnimationNameByDirection(_currentDirection);
         if(AnimationPlayer != null)
         {
             AnimationPlayer.Play(idleAnimationName);

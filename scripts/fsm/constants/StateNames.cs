@@ -9,4 +9,6 @@ public static class StateNames
     public const string Attack = "attack";
 
     public const string Death = "death";
+
+    public const string BackToHome = "back_to_home";
 }

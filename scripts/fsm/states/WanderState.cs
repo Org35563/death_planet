@@ -52,7 +52,6 @@ public partial class WanderState : State, IMovableState
         _random = new Random();
         _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
         _chaseNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
-        ChaseArea.BodyEntered += OnChaseCollision;
     }
 
     public override void PhysicsUpdate(float delta)
@@ -60,15 +59,13 @@ public partial class WanderState : State, IMovableState
         CheckCollisionsWithBarriers();
 
         var newPosition = _currentMoveDirection * _wanderingSpeed * delta;
-        if(IsCharacterOnValidArea(newPosition))
+        if(Global.IsCharacterOnArea(_validMoveArea, Character.Position + newPosition))
         {
-            // GD.Print("valid area!");
             Character.Position += newPosition;
         }
         else
         {
-            // GD.Print("wrong area!");
-            TransitionToChaseToValidArea();
+            StateMachine.TransitionTo(StateNames.BackToHome);
         }
 
         Character.MoveAndSlide();
@@ -76,8 +73,6 @@ public partial class WanderState : State, IMovableState
 
     public override void Enter()
     {  
-        // GD.Print("on wander state");
-
         StateMachine.TryTransitionToDeath(Character);
 
         _currentMoveDirection = GetNewRandomMoveDirection();
@@ -166,22 +161,6 @@ public partial class WanderState : State, IMovableState
         StateMachine.TransitionTo(StateNames.Idle);
     }
 
-    private void TransitionToChaseToValidArea()
-    {
-        if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
-        {
-            interactableState.SetInteractableObject(new CharacterBody2D(){ Name = "area2d", Position = _validMoveArea.Position });
-        }
-
-        if(_chaseNode != null && _chaseNode is IMovableState movableState)
-        {
-            movableState.SetCurrentDirection(_currentMoveDirectionName);
-        }
-
-        Exit();
-        StateMachine.TransitionTo(StateNames.Chase);
-    }
-
     private void CheckCollisionsWithBarriers()
     {
         if(RayCast != null)
@@ -193,30 +172,5 @@ public partial class WanderState : State, IMovableState
                 TransitionToIdle();
             }         
         }
-    }
-
-    private bool IsCharacterOnValidArea(Vector2 positionToCheck)
-    {
-        if(_validMoveArea != null)
-        {
-            var areaBounds = GetWorldBoundaries(_validMoveArea, "slime_area_collision_shape");
-            if (areaBounds.HasPoint(Character.Position + positionToCheck))
-            {
-                return true;              
-            }
-        }
-
-        return false;
-    }
-
-    private Rect2 GetWorldBoundaries(Area2D area, string areaCollisionShapeName)
-    {
-        // Получаем позицию и размер Area2D
-        var child = area.GetNode<CollisionShape2D>(areaCollisionShapeName);
-        Vector2 position = child.Position;
-        Vector2 size = child.Shape.GetRect().Size;
-
-        // Создаем Rect2, представляющий границы Area2D
-        return new Rect2(position - size / 2, size);
     }
 }

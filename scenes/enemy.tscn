@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=3 uid="uid://4ajsqoi0aos5"]
+[gd_scene load_steps=58 format=3 uid="uid://4ajsqoi0aos5"]
 
 [ext_resource type="Script" path="res://scripts/enemy/Enemy.cs" id="1_kg176"]
 [ext_resource type="Texture2D" uid="uid://dnp6v4ymg7afd" path="res://art/characters/slime.png" id="1_mpxr7"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/fsm/states/ChaseState.cs" id="6_6i1pb"]
 [ext_resource type="Script" path="res://scripts/fsm/states/AttackState.cs" id="7_p2u8v"]
 [ext_resource type="Script" path="res://scripts/fsm/states/DeathState.cs" id="8_sc0j5"]
+[ext_resource type="Script" path="res://scripts/fsm/states/BackToHomeState.cs" id="9_d1duv"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s5ijh"]
 atlas = ExtResource("1_mpxr7")
@@ -464,6 +465,13 @@ Character = NodePath("../..")
 
 [node name="fsm_death_timer" type="Timer" parent="state_machine/death"]
 wait_time = 1.5
+
+[node name="back_to_home" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character", "RayCast")]
+script = ExtResource("9_d1duv")
+AnimationPlayer = NodePath("../../enemy_animation")
+Character = NodePath("../..")
+RayCast = NodePath("../../enemy_raycast")
+HomeAreaName = "slime_area"
 
 [node name="enemy_raycast" type="RayCast2D" parent="."]
 target_position = Vector2(0, 11)

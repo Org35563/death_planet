@@ -84,7 +84,7 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
             attackDirection = deltaY < 0 ? DirectionNames.UP : DirectionNames.DOWN;
         }
 
-        var attackAnimationName = Global.GetAttackAnimationNameByDirection(attackDirection);
+        var attackAnimationName = AnimationHelper.GetAttackAnimationNameByDirection(attackDirection);
 
         AnimationPlayer.Play(attackAnimationName);
     }

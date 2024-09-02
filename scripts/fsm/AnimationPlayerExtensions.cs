@@ -6,7 +6,7 @@ public static class AnimationPlayerExtensions
     {     
         if(animationPlayer != null)
         {
-            var moveAnimationName = Global.GetMoveAnimationNameByDirection(moveDirectionName);
+            var moveAnimationName = AnimationHelper.GetMoveAnimationNameByDirection(moveDirectionName);
 
             animationPlayer.FlipH = flipH;
             animationPlayer.Play(moveAnimationName);

@@ -1,42 +1,8 @@
-using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
 public static class Global
 {
-    private static Dictionary<string, string> _attackAnimations = new ()
-    {
-        { DirectionNames.RIGHT, AnimationNames.SIDE_ATTACK },
-        { DirectionNames.LEFT, AnimationNames.SIDE_ATTACK },
-        { DirectionNames.DOWN, AnimationNames.FRONT_ATTACK },
-        { DirectionNames.UP, AnimationNames.BACK_ATTACK },  
-    };
-
-    private static Dictionary<string, string> _moveAnimations = new ()
-    {
-        { DirectionNames.RIGHT, AnimationNames.SIDE_WALK },
-        { DirectionNames.LEFT, AnimationNames.SIDE_WALK },
-        { DirectionNames.DOWN, AnimationNames.FRONT_WALK },
-        { DirectionNames.UP, AnimationNames.BACK_WALK },  
-    };
-
-    private static Dictionary<string, string> _idleAnimations = new ()
-    {
-        { DirectionNames.RIGHT, AnimationNames.SIDE_IDLE },
-        { DirectionNames.LEFT, AnimationNames.SIDE_IDLE },
-        { DirectionNames.DOWN, AnimationNames.FRONT_IDLE },
-        { DirectionNames.UP, AnimationNames.BACK_IDLE },  
-    };
-
-    public static string GetAttackAnimationNameByDirection(string direction) =>
-      GetAnimationNameByDirection(_attackAnimations, direction);
-
-    public static string GetMoveAnimationNameByDirection(string direction) =>
-      GetAnimationNameByDirection(_moveAnimations, direction);
-
-    public static string GetIdleAnimationNameByDirection(string direction) =>
-      GetAnimationNameByDirection(_idleAnimations, direction);
-
     public static bool IsGameUnitType<T>(Node2D body) =>
       body.GetType()
           .GetInterfaces()
@@ -68,13 +34,28 @@ public static class Global
         return newDirection;
     }
 
-    private static string GetAnimationNameByDirection(Dictionary<string, string> animations, string direction)
+    public static Rect2 GetWorldBoundaries(Area2D area)
     {
-        if(animations.ContainsKey(direction))
+        // Получаем позицию и размер Area2D
+        var areaShape = area.GetChild<CollisionShape2D>(0);
+        Vector2 position = areaShape.Position;
+        Vector2 size = areaShape.Shape.GetRect().Size;
+
+        // Создаем Rect2, представляющий границы Area2D
+        return new Rect2(position - size / 2, size);
+    }
+
+    public static bool IsCharacterOnArea(Area2D area, Vector2 positionToCheck)
+    {
+        if(area != null)
         {
-          return animations[direction];
+            var areaBounds = GetWorldBoundaries(area);
+            if (areaBounds.HasPoint(positionToCheck))
+            {
+                return true;              
+            }
         }
 
-        return AnimationNames.NONE;
+        return false;
     }
-  }
+}
