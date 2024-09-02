@@ -49,7 +49,6 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     public override void Enter()
     {
-        GD.Print("on chase state");
         StateMachine.TryTransitionToDeath(Character);
     }
 
