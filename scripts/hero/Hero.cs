@@ -137,6 +137,9 @@ public partial class Hero : CharacterBody2D, ICombatCreature
 	{
 		if(_isAlive == false && _alreadyDeath == false)
 		{
+			var collisionShape = GetNode<CollisionShape2D>("hero_collision_shape");
+            collisionShape.Disabled = true;
+
 			_animationPlayer.Play(AnimationNames.DEATH);
 			_alreadyDeath = true;
 			_heroDeathTimer.Start();

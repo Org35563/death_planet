@@ -89,6 +89,11 @@ public partial class IdleState : State, IMovableState
             return;
         }
 
+        if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
+        {
+            interactableState.SetInteractableObject(null);
+        }
+
         if(_chaseNode != null && _chaseNode is IMovableState movableState)
         {
             _currentDirection = movableState.GetCurrentDirection();
