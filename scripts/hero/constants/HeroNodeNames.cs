@@ -1,3 +1,5 @@
+using System.Dynamic;
+
 public static class HeroNodeNames
 {
     public const string Animation = "hero_animation";
@@ -6,5 +8,7 @@ public static class HeroNodeNames
 
     public const string AttackCooldownTimer = "hero_attack_cooldown_timer";
 
-    public const string DeathTimer = "hero_death_timer"; 
+    public const string DeathTimer = "hero_death_timer";
+
+    public const string CollisionShapeName = "hero_collision_shape";
 }

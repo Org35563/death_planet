@@ -113,7 +113,7 @@ tile_set = SubResource("TileSet_ea08n")
 
 [node name="hero" parent="." instance=ExtResource("4_n02ml")]
 y_sort_enabled = true
-position = Vector2(352, 398)
+position = Vector2(270, 366)
 disable_mode = 1
 motion_mode = 1
 Health = 100
