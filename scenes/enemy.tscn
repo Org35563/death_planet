@@ -438,6 +438,7 @@ AnimationPlayer = NodePath("../../enemy_animation")
 Character = NodePath("../..")
 ChaseArea = NodePath("../../hero_detection_area")
 RayCast = NodePath("../../enemy_raycast")
+HomeAreaName = "slime_area"
 MinTimerValue = 1
 MaxTimerValue = 4
 
@@ -450,10 +451,10 @@ Character = NodePath("../..")
 AttackArea = NodePath("../../enemy_hitbox")
 RayCast = NodePath("../../enemy_raycast")
 
-[node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
+[node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Attacker")]
 script = ExtResource("7_p2u8v")
 AnimationPlayer = NodePath("../../enemy_animation")
-Character = NodePath("../..")
+Attacker = NodePath("../..")
 
 [node name="fsm_attack_cooldown_timer" type="Timer" parent="state_machine/attack"]
 one_shot = true
@@ -477,8 +478,6 @@ HomeAreaName = "slime_area"
 target_position = Vector2(0, 11)
 collision_mask = 7
 
-[connection signal="body_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaBodyEntered"]
-[connection signal="mouse_entered" from="hero_detection_area" to="." method="OnHeroDetectionAreaMouseEntered"]
 [connection signal="timeout" from="enemy_death_timer" to="." method="OnEnemyDeathTimerTimeout"]
 [connection signal="timeout" from="state_machine/idle/fsm_idle_timer" to="state_machine/idle" method="OnFsmIdleTimerTimeout"]
 [connection signal="timeout" from="state_machine/wander/fsm_wander_timer" to="state_machine/wander" method="OnFsmWanderTimerTimeout"]

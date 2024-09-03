@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Godot;
 
 public partial class BackToHomeState : State
@@ -19,9 +18,7 @@ public partial class BackToHomeState : State
 
     private Area2D _homeArea;
 
-    private Dictionary<string, Vector2> _chasesRayCastDict;
-
-    private float _rayCastLength = 20.0f;
+    private float _rayLength = 20.0f;
 
     private float _moveSpeed;
 
@@ -31,14 +28,6 @@ public partial class BackToHomeState : State
         {
             _moveSpeed = combatCreature.GetMoveSpeed();
         }
-
-        _chasesRayCastDict = new ()
-        {
-            { DirectionNames.RIGHT, new Vector2(-_rayCastLength, 0) },
-            { DirectionNames.LEFT, new Vector2(_rayCastLength ,0) },
-            { DirectionNames.DOWN, new Vector2(0, _rayCastLength) },
-            { DirectionNames.UP, new Vector2(0, -_rayCastLength) },  
-        };
 
         _homeArea = GetNode("../../../").GetNode<Area2D>(HomeAreaName);
         _homeAreaShape = _homeArea.GetChild<CollisionShape2D>(0);
@@ -57,21 +46,13 @@ public partial class BackToHomeState : State
             AnimationPlayer.PlayMoveAnimation(newDirectionName, direction.X < 0);
 
             // TODO: Добавить избегание препятствий
-            SetNewRayCastDirection(newDirectionName);
+            RayCast.SetNewRayCastDirection(newDirectionName, _rayLength);
 
             Character.MoveAndSlide();
         }
         else
         {
             StateMachine.TransitionTo(StateNames.Wander);
-        }
-    }
-
-    private void SetNewRayCastDirection(string currentDirectionName)
-    {
-        if(RayCast != null)
-        {
-            RayCast.TargetPosition = _chasesRayCastDict[currentDirectionName];
         }
     }
 }

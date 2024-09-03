@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Godot;
 
 public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IMovableState
@@ -23,8 +22,6 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
 
     private float _moveSpeed;
 
-    private Dictionary<string, Vector2> _chasesRayCastDict;
-
     private float _rayCastLength = 20.0f;
 
     public override void _Ready()
@@ -33,14 +30,6 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
         {
             _moveSpeed = combatCreature.GetMoveSpeed();
         }
-
-        _chasesRayCastDict = new ()
-        {
-            { DirectionNames.RIGHT, new Vector2(-_rayCastLength, 0) },
-            { DirectionNames.LEFT, new Vector2(_rayCastLength ,0) },
-            { DirectionNames.DOWN, new Vector2(0, _rayCastLength) },
-            { DirectionNames.UP, new Vector2(0, -_rayCastLength) },  
-        };
 
         AttackArea.BodyEntered += OnAttackAreaBodyEntered;
         AttackArea.BodyExited += OnAttackAreaBodyExited;
@@ -65,7 +54,7 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
         AnimationPlayer.PlayMoveAnimation(newDirectionName, direction.X < 0);
 
         // TODO: Добавить избегание препятствий
-        SetNewRayCastDirection(newDirectionName);
+        RayCast.SetNewRayCastDirection(newDirectionName, _rayCastLength);
 
         Character.MoveAndSlide();
     }
@@ -100,14 +89,6 @@ public partial class ChaseState : State, IInteractableState<CharacterBody2D>, IM
         if(body != null && body is ILivingCreature && (CharacterBody2D)body == _chasingObject)
         {
             StateMachine.TransitionTo(StateNames.Chase);
-        }
-    }
-
-    private void SetNewRayCastDirection(string currentDirectionName)
-    {
-        if(RayCast != null)
-        {
-            RayCast.TargetPosition = _chasesRayCastDict[currentDirectionName];
         }
     }
 }

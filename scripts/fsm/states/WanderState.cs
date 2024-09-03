@@ -16,6 +16,9 @@ public partial class WanderState : State, IMovableState
     public RayCast2D RayCast;
 
     [Export]
+    public string HomeAreaName;
+
+    [Export]
     public int MinTimerValue;
 
     [Export]
@@ -31,11 +34,9 @@ public partial class WanderState : State, IMovableState
 
     private Node _idleNode;
 
-    private Node _chaseNode;
-
     private float _wanderingSpeed;
 
-    private float _rayCastLength = 20.0f;
+    private float _rayLength = 20.0f;
 
     private Area2D _validMoveArea;
 
@@ -46,19 +47,22 @@ public partial class WanderState : State, IMovableState
             _wanderingSpeed = combatCreature.GetMoveSpeed();
         }
         
-        _validMoveArea = GetNode("../../../").GetNode<Area2D>("slime_area");
+        _validMoveArea = GetNode("../../../").GetNode<Area2D>(HomeAreaName);
 
         _fsmWanderTimer = GetNode<Timer>(StateNodeNames.WanderTimer);
         _random = new Random();
         _idleNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Idle);
-        _chaseNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
     }
 
     public override void PhysicsUpdate(float delta)
     {
-        CheckCollisionsWithBarriers();
+        var expectedPosition  = _currentMoveDirection * _wanderingSpeed;
+        if(RayCast.HasCollisionsWithBarriers(expectedPosition, _rayLength))
+        {
+            StateMachine.TransitionToIdle(_idleNode, _currentMoveDirectionName);
+        }
 
-        var newPosition = _currentMoveDirection * _wanderingSpeed * delta;
+        var newPosition = expectedPosition * delta;
         if(Global.IsCharacterOnArea(_validMoveArea, Character.Position + newPosition))
         {
             Character.Position += newPosition;
@@ -75,7 +79,7 @@ public partial class WanderState : State, IMovableState
     {  
         StateMachine.TryTransitionToDeath(Character);
 
-        _currentMoveDirection = GetNewRandomMoveDirection();
+        _currentMoveDirection = _random.GetNewRandomMoveDirection();
 
         var newDirectionName = Global.GetNewMoveDirectionName(_currentMoveDirection);
 
@@ -92,85 +96,9 @@ public partial class WanderState : State, IMovableState
 
     public override void Exit() => _fsmWanderTimer.Stop();
 
-    public void OnFsmWanderTimerTimeout() => TransitionToIdle();
+    public void OnFsmWanderTimerTimeout() => StateMachine.TransitionToIdle(_idleNode, _currentMoveDirectionName);
 
     public string GetCurrentDirection() => _currentMoveDirectionName;
 
     public void SetCurrentDirection(string direction) => _currentMoveDirectionName = direction;
-
-    public void OnChaseCollision(Node2D body)
-    {
-        if(Global.IsCreatureAlive(Character) == false)
-        {
-            return;
-        }
-
-        if(body != null && Global.IsCreatureAlive(body))
-        {
-            if(_chaseNode != null && _chaseNode is IInteractableState<CharacterBody2D> interactableState)
-            {
-                interactableState.SetInteractableObject((CharacterBody2D)body);
-            }
-
-            if(_chaseNode != null && _chaseNode is IMovableState movableState)
-            {
-                movableState.SetCurrentDirection(_currentMoveDirectionName);
-            }
-
-            Exit();
-            StateMachine.TransitionTo(StateNames.Chase);
-        }
-        else
-        {
-            Exit();
-            StateMachine.TransitionTo(StateNames.Idle);
-        }
-    }
-
-    private Vector2 GetNewRandomMoveDirection()
-    {
-        var newMoveDirection = Vector2.Zero;
-        while(newMoveDirection.X == 0 || newMoveDirection.Y == 0)
-        {
-            newMoveDirection = new Vector2(_random.Next(-1, 2), _random.Next(-1, 2)).Normalized();
-        }
-
-        return newMoveDirection;
-    }
-
-    private void SetNewRayCastDirection(Vector2 moveDirection)
-    {
-        var velocity = moveDirection * _wanderingSpeed;
-
-        int xDirection = velocity.X > 0 ? 1 : (velocity.X < 0 ? -1 : 0);
-        int yDirection = velocity.Y > 0 ? 1 : (velocity.Y < 0 ? -1 : 0);
-
-        Vector2 targetPosition = new (_rayCastLength * xDirection, _rayCastLength * yDirection);
-
-        RayCast.TargetPosition = targetPosition;
-    }
-
-    private void TransitionToIdle()
-    {
-        if(_idleNode != null && _idleNode is IMovableState movableState)
-        {
-            movableState.SetCurrentDirection(_currentMoveDirectionName);
-        }
-
-        Exit();
-        StateMachine.TransitionTo(StateNames.Idle);
-    }
-
-    private void CheckCollisionsWithBarriers()
-    {
-        if(RayCast != null)
-        {
-            SetNewRayCastDirection(_currentMoveDirection);
-
-            if(RayCast.IsColliding())
-            {
-                TransitionToIdle();
-            }         
-        }
-    }
 }

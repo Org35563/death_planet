@@ -24,14 +24,14 @@ public partial class IdleState : State, IMovableState
 
     private Node _chaseNode;
 
-    private string _currentDirection;
+    private string _currentDirectionName;
 
     public override void _Ready()
     {
         _fsmIdleTimer = GetNode<Timer>(StateNodeNames.IdleTimer);
         _random = new Random();
         _chaseNode = Global.GetNodeByName(Character, StateNodeNames.StateMachine, StateNames.Chase);
-        _currentDirection = DirectionNames.DOWN;
+        _currentDirectionName = DirectionNames.DOWN;
         ChaseArea.BodyEntered += OnChaseAreaBodyEntered;
         ChaseArea.BodyExited += OnChaseAreaBodyExited;
     }
@@ -40,7 +40,7 @@ public partial class IdleState : State, IMovableState
     {   
         StateMachine.TryTransitionToDeath(Character);
 
-        PlayIdleAnimation();
+        AnimationPlayer.PlayIdleAnimation(_currentDirectionName);
 
         if(_fsmIdleTimer != null)
         {
@@ -69,7 +69,7 @@ public partial class IdleState : State, IMovableState
 
             if(_chaseNode != null && _chaseNode is IMovableState movableState)
             {
-                movableState.SetCurrentDirection(_currentDirection);
+                movableState.SetCurrentDirection(_currentDirectionName);
             }
 
             Exit();
@@ -96,23 +96,14 @@ public partial class IdleState : State, IMovableState
 
         if(_chaseNode != null && _chaseNode is IMovableState movableState)
         {
-            _currentDirection = movableState.GetCurrentDirection();
+            _currentDirectionName = movableState.GetCurrentDirection();
         }
 
         Exit();
         StateMachine.TransitionTo(StateNames.Wander);
     }
 
-    public string GetCurrentDirection() => _currentDirection;
+    public string GetCurrentDirection() => _currentDirectionName;
 
-    public void SetCurrentDirection(string direction) => _currentDirection = direction;
-
-    private void PlayIdleAnimation()
-    {
-        var idleAnimationName = AnimationHelper.GetIdleAnimationNameByDirection(_currentDirection);
-        if(AnimationPlayer != null)
-        {
-            AnimationPlayer.Play(idleAnimationName);
-        }
-    }
+    public void SetCurrentDirection(string direction) => _currentDirectionName = direction;
 }

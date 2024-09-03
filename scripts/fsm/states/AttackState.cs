@@ -6,11 +6,11 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
     public AnimatedSprite2D AnimationPlayer;
 
     [Export]
-    public CharacterBody2D Character;
+    public CharacterBody2D Attacker;
 
     private Timer _attackCooldownTimer;
 
-    private ILivingCreature _attackingObject;
+    private ILivingCreature _attackedObject;
 
     private bool _attackCooldownFinished;
 
@@ -18,7 +18,7 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
 
     public override void _Ready()
     {
-        if(Character is ICombatCreature combatCreature)
+        if(Attacker is ICombatCreature combatCreature)
         {
             _attackPower = combatCreature.GetAttackPower();
         }
@@ -29,19 +29,19 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
 
     public override void Enter()
     {
-        StateMachine.TryTransitionToDeath(Character);
+        StateMachine.TryTransitionToDeath(Attacker);
     }
 
     public override void PhysicsUpdate(float delta)
     {
-        if(_attackCooldownFinished && _attackingObject != null && _attackingObject.IsAlive())
+        if(_attackCooldownFinished && _attackedObject != null && _attackedObject.IsAlive())
         {
-            PlayAttackAnimation();
+            AnimationPlayer.PlayAttackAnimation(Attacker.Position, _attackedObject.GetCurrentPosition());
 
-            _attackingObject.SetHealth(_attackingObject.GetHealth() - _attackPower);
+            _attackedObject.SetHealth(_attackedObject.GetHealth() - _attackPower);
             _attackCooldownFinished = false;
             _attackCooldownTimer.Start();
-            GD.Print($"Attacking character health: {_attackingObject.GetHealth()}");
+            GD.Print($"Attacking character health: {_attackedObject.GetHealth()}");
         }
     }
 
@@ -49,43 +49,20 @@ public partial class AttackState : State, IInteractableState<ILivingCreature>
     {
         _attackCooldownTimer.Stop();
 
-        StateMachine.TryTransitionToDeath(Character);
+        StateMachine.TryTransitionToDeath(Attacker);
 
-        if(_attackingObject.IsAlive())
+        if(_attackedObject.IsAlive())
         {
             _attackCooldownFinished = true;
         }
         else
         {
-            _attackingObject = null;
+            _attackedObject = null;
             StateMachine.TransitionTo(StateNames.Wander);
         }
     }
 
-    public ILivingCreature GetInteractableObject()  => _attackingObject;
+    public ILivingCreature GetInteractableObject()  => _attackedObject;
 
-    public void SetInteractableObject(ILivingCreature interactableObject)  => _attackingObject = interactableObject;
-
-    private void PlayAttackAnimation()
-    {
-        var attackingObjectPosition = _attackingObject.GetCurrentPosition();
-
-        float deltaX = attackingObjectPosition.X - Character.Position.X;
-        float deltaY = attackingObjectPosition.Y - Character.Position.Y;
-
-        var attackDirection = DirectionNames.NONE;
-        if (Mathf.Abs(deltaX) > Mathf.Abs(deltaY))
-        {
-            AnimationPlayer.FlipH = deltaX < 0;
-            attackDirection = AnimationPlayer.FlipH ? DirectionNames.RIGHT : DirectionNames.LEFT;
-        }
-        else
-        {
-            attackDirection = deltaY < 0 ? DirectionNames.UP : DirectionNames.DOWN;
-        }
-
-        var attackAnimationName = AnimationHelper.GetAttackAnimationNameByDirection(attackDirection);
-
-        AnimationPlayer.Play(attackAnimationName);
-    }
+    public void SetInteractableObject(ILivingCreature interactableObject)  => _attackedObject = interactableObject;
 }

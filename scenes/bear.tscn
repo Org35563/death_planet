@@ -415,10 +415,9 @@ AnimationPlayer = NodePath("../../bear_animation")
 Character = NodePath("../..")
 AttackArea = NodePath("../../bear_hitbox")
 
-[node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer", "Character")]
+[node name="attack" type="Node" parent="state_machine" node_paths=PackedStringArray("AnimationPlayer")]
 script = ExtResource("7_n6wt5")
 AnimationPlayer = NodePath("../../bear_animation")
-Character = NodePath("../..")
 
 [node name="fsm_attack_cooldown_timer" type="Timer" parent="state_machine/attack"]
 
